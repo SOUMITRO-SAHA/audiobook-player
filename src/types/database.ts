@@ -1,7 +1,10 @@
 export interface Account {
   id: number;
   username: string;
-  installed: boolean;
+  installed: boolean | null;
+  theme: string | null;
+  createdAt: string | null;
+  updatedAt: string | null;
 }
 
 export interface LastPlaying {

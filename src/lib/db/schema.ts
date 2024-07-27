@@ -20,17 +20,10 @@ export const playbackSettings = sqliteTable("playback_settings", {
   updatedAt: text("updated_at").default(sql`CURRENT_TIMESTAMP`),
 });
 
-export const permittedFolders = sqliteTable("permitted_folders", {
-  id: integer("id").primaryKey({ autoIncrement: true }),
-  dbFolderId: integer("db_folder_id").notNull(),
-  actualFolderId: text("actual_folder_id"),
-  createdAt: text("created_at").default(sql`CURRENT_TIMESTAMP`),
-  updatedAt: text("updated_at").default(sql`CURRENT_TIMESTAMP`),
-});
-
 export const folders = sqliteTable("folders", {
   id: integer("id").primaryKey({ autoIncrement: true }),
   name: text("name").notNull(),
+  uri: text("uri").notNull(),
   createdAt: text("created_at").default(sql`CURRENT_TIMESTAMP`),
   updatedAt: text("updated_at").default(sql`CURRENT_TIMESTAMP`),
 });
