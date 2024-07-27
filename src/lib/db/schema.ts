@@ -23,7 +23,7 @@ export const playbackSettings = sqliteTable("playback_settings", {
 export const folders = sqliteTable("folders", {
   id: integer("id").primaryKey({ autoIncrement: true }),
   name: text("name").notNull(),
-  uri: text("uri").notNull(),
+  uri: text("uri").notNull().unique(),
   createdAt: text("created_at").default(sql`CURRENT_TIMESTAMP`),
   updatedAt: text("updated_at").default(sql`CURRENT_TIMESTAMP`),
 });

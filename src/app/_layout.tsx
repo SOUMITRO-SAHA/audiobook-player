@@ -22,12 +22,11 @@ import * as React from "react";
 import { useEffect, useState } from "react";
 import "react-native-reanimated";
 import { RootSiblingParent } from "react-native-root-siblings";
+import ParallaxScrollView from "@/components/ParallaxScrollView";
 
 // Database Connector
 const expoDb = openDatabaseSync(DEFAULT_DATABASE_NAME);
 const db = drizzle(expoDb);
-
-const sqlDB = SQLite.openDatabaseSync(DEFAULT_DATABASE_NAME);
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
@@ -42,7 +41,7 @@ export default function RootLayout() {
 
   // Drizzle
   const { success, error } = useMigrations(db, migrations);
-  useDrizzleStudio(sqlDB); // Initiate Drizzle Studio
+  useDrizzleStudio(expoDb); // Initiate Drizzle Studio
 
   // Side Effects
   useEffect(() => {
@@ -51,11 +50,15 @@ export default function RootLayout() {
     }
   }, [loaded]);
 
+  console.log(expoDb);
+
   if (error) {
     return (
-      <ThemedText>
-        <ThemedText>Migration error: {error.message}</ThemedText>
-      </ThemedText>
+      <ParallaxScrollView>
+        <ThemedView>
+          <ThemedText>Migration error: {error.message}</ThemedText>
+        </ThemedView>
+      </ParallaxScrollView>
     );
   }
   if (!success) {

@@ -30,7 +30,7 @@
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.1",
     "drizzle-orm": "^0.32.1",
-    "expo": "~51.0.22",
+    "expo": "^51.0.22",
     "expo-asset": "~10.0.10",
     "expo-constants": "~16.0.2",
     "expo-drizzle-studio-plugin": "^0.0.2",
