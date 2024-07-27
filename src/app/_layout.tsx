@@ -23,6 +23,7 @@ import { useEffect, useState } from "react";
 import "react-native-reanimated";
 import { RootSiblingParent } from "react-native-root-siblings";
 import ParallaxScrollView from "@/components/ParallaxScrollView";
+import { StoreProvider } from "@/store";
 
 // Database Connector
 const expoDb = openDatabaseSync(DEFAULT_DATABASE_NAME);
@@ -76,16 +77,18 @@ export default function RootLayout() {
   return (
     <RootSiblingParent>
       <React.Suspense fallback={<AppWideSuspense />}>
-        <SQLiteProvider useSuspense databaseName={DEFAULT_DATABASE_NAME}>
-          <ThemeProvider
-            value={colorScheme === "dark" ? DarkTheme : DefaultTheme}
-          >
-            <Stack>
-              <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-              <Stack.Screen name="+not-found" />
-            </Stack>
-          </ThemeProvider>
-        </SQLiteProvider>
+        <StoreProvider>
+          <SQLiteProvider useSuspense databaseName={DEFAULT_DATABASE_NAME}>
+            <ThemeProvider
+              value={colorScheme === "dark" ? DarkTheme : DefaultTheme}
+            >
+              <Stack>
+                <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+                <Stack.Screen name="+not-found" />
+              </Stack>
+            </ThemeProvider>
+          </SQLiteProvider>
+        </StoreProvider>
       </React.Suspense>
     </RootSiblingParent>
   );

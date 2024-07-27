@@ -7,23 +7,34 @@ import { fetchAccount } from "@/lib/db/query";
 import { Account } from "@/types/database";
 import { MaterialIcons } from "@expo/vector-icons";
 import { useEffect, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { resetAccount, selectAccount } from "@/store/slice";
 
 export default function HomeScreen() {
   const [account, setAccount] = useState<Account | null>(null);
+
+  // Redux
+  const { updated } = useSelector(selectAccount);
+  const dispatch = useDispatch();
 
   // Side Effects
   useEffect(() => {
     // Fetching Account
     const getAccount = async () => {
       const res = await fetchAccount();
-      if (res) setAccount(res);
+      if (res) {
+        setAccount(res);
+
+        // Dispatch Account
+        dispatch(resetAccount());
+      }
     };
 
     // Fetching Folders
     // fetchAllFolders();
 
     getAccount();
-  }, []);
+  }, [updated]);
 
   return (
     <ParallaxScrollView className="relative">

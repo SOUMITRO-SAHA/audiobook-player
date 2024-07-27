@@ -7,6 +7,22 @@ export interface Account {
   updatedAt: string | null;
 }
 
+export interface PermittedFolder {
+  id: number;
+  name: string;
+  uri: string;
+  createdAt: string | null;
+  updatedAt: string | null;
+}
+
+export interface Folder {
+  id: number;
+  name: string;
+  uri: string;
+  createdAt: string | null;
+  updatedAt: string | null;
+}
+
 export interface LastPlaying {
   id: number;
   fileName: string;
