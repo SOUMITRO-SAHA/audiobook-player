@@ -1,10 +1,9 @@
-import { extractUriToGetName } from "@/lib/utils";
+import { extractSubFolderNameFromUri, extractUriToGetName } from "@/lib/utils";
 import { eq } from "drizzle-orm";
 import * as FileSystem from "expo-file-system";
 import { ToastAndroid } from "react-native";
 import { db } from "../db";
-import { permittedFolders } from "../db/schema";
-import { useDispatch } from "react-redux";
+import { folders, permittedFolders } from "../db/schema";
 
 export const getAllFolders = async (): Promise<string[] | null> => {
   try {
@@ -33,17 +32,32 @@ export const getAllFolders = async (): Promise<string[] | null> => {
   }
 };
 
-export const getAllFilesByFolderUri = async (uri: string) => {
+export const fetchFolderById = async (id: string) => {
   try {
-    const folder = await db.query.folders.findFirst();
+    const folder = await db.query.folders.findMany({
+      where: eq(folders.id, Number(id)),
+    });
 
     if (!folder) {
-      throw new Error(`Folder with this uri ${uri} not found`);
+      throw new Error(`Folder with this uri not found`);
     }
     return folder;
   } catch (error) {
     console.error("Error getting folder by ID:", error);
     throw error;
+  }
+};
+
+export const fetchAllFilesByFolderId = async (id: string) => {};
+
+export const addAllFilesToFolder = async (uri: string) => {
+  try {
+    // First fetch all the files from the Provided folder uri
+  } catch (error) {
+    console.error(`Failed to add files to the Database`, error);
+    if (error instanceof Error) {
+      ToastAndroid.show(error.message, ToastAndroid.SHORT);
+    }
   }
 };
 
@@ -97,7 +111,9 @@ export const addNewFolder = async () => {
   }
 };
 
-export const addSubfolderUnderMainFolder = async (uri?: string) => {
+export const addSubfolderUnderMainFolder = async (
+  uri?: string
+): Promise<any> => {
   try {
     if (uri) {
       // First Time Only when the Parent Folder initiated
@@ -105,9 +121,43 @@ export const addSubfolderUnderMainFolder = async (uri?: string) => {
         await FileSystem.StorageAccessFramework.readDirectoryAsync(uri);
 
       if (subFolders.length > 0) {
-        await Promise.all(
-          subFolders.map(async (folder) => {
-            console.log("1st", folder);
+        return await Promise.all(
+          subFolders.map(async (subFolder) => {
+            // First Check whether the folder exists or not
+            const existedFolder = await db.query.folders.findMany({
+              where: eq(folders.uri, subFolder),
+            });
+
+            // If the folder does not exists
+            if (!existedFolder) {
+              // Then add the the database
+              const subFolderName = extractSubFolderNameFromUri(subFolder);
+
+              // Add All the Subfolders to the Database
+              if (subFolder && subFolderName) {
+                const response = await db.insert(folders).values({
+                  uri: subFolder,
+                  name: subFolderName,
+                });
+
+                if (response) {
+                  ToastAndroid.show(
+                    `Subfolder "${subFolderName}" added`,
+                    ToastAndroid.SHORT
+                  );
+
+                  return response;
+                } else {
+                  ToastAndroid.show(
+                    `Failed to Add Subfolder "${subFolderName}"`,
+                    ToastAndroid.SHORT
+                  );
+                  return null;
+                }
+              }
+            }
+
+            return existedFolder;
           })
         );
       }
@@ -119,18 +169,13 @@ export const addSubfolderUnderMainFolder = async (uri?: string) => {
         await Promise.all(
           permittedFolders.map(async (folder) => {
             try {
-              // Getting all the Folders under the folder
-              const subFolders =
-                await FileSystem.StorageAccessFramework.readDirectoryAsync(
-                  folder.uri
-                );
-              // You can process subFolders here if needed
-              console.log("2nd", subFolders);
+              return await addSubfolderUnderMainFolder(folder.uri);
             } catch (error) {
               console.error(
                 `Error reading directory for folder ${folder.uri}:`,
                 error
               );
+              return error;
             }
           })
         );
@@ -138,6 +183,7 @@ export const addSubfolderUnderMainFolder = async (uri?: string) => {
     }
   } catch (error) {
     console.error("Error in addSubfolderUnderMainFolder:", error);
+    return error;
   }
 };
 

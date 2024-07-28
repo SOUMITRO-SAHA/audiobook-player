@@ -46,6 +46,7 @@ export const lastPlaying = sqliteTable("last_playing", {
   updatedAt: text("updated_at").default(sql`CURRENT_TIMESTAMP`),
 });
 
+// Ignore this One use Track
 export const files = sqliteTable("files", {
   id: integer("id").primaryKey({ autoIncrement: true }),
   name: text("name").notNull(),

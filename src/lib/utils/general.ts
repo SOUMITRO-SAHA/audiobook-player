@@ -10,3 +10,29 @@ export const formatTimestamp = (timestamp: string): string => {
   };
   return new Intl.DateTimeFormat("en-US", options).format(date);
 };
+
+/**
+ * Extracts the `sub-folder` name from a given URI.
+ *
+ * @param uri - The URI string to extract the `sub-folder` name from.
+ * @returns The extracted `sub-folder` name, or null if extraction fails.
+ */
+export const extractSubFolderNameFromUri = (uri: string): string | null => {
+  try {
+    console.log("URI ===>", uri);
+    // Decode the URI
+    const decodedUri = decodeURIComponent(uri);
+
+    // Split the decoded URI into segments by the '/' character.
+    const segments = decodedUri.split("/");
+
+    // Extract the last segment of the URI
+    const lastSegment = segments.pop();
+
+    // Return the `last segment` or `null` if it is not available.
+    return lastSegment || null;
+  } catch (error) {
+    console.error(`Error extracting subfolder name from URI:`, error);
+    return null;
+  }
+};
