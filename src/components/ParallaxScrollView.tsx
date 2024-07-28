@@ -5,6 +5,7 @@ import { StyleSheet } from "react-native";
 
 type Props = PropsWithChildren<{
   className?: string;
+  gap?: number;
 }>;
 
 export default function ParallaxScrollView({ children, className }: Props) {
