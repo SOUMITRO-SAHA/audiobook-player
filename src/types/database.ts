@@ -7,14 +7,6 @@ export interface Account {
   updatedAt: string | null;
 }
 
-export interface PermittedFolder {
-  id: number;
-  name: string;
-  uri: string;
-  createdAt: string | null;
-  updatedAt: string | null;
-}
-
 export interface Folder {
   id: number;
   name: string;
@@ -33,7 +25,10 @@ export interface LastPlaying {
 
 export interface Track {
   id: number;
-  fileName: string;
-  directory: string;
-  path: string;
+  folderId: number | null;
+  name: string;
+  uri: string;
+  track_length: string | null;
+  createdAt: string | null;
+  updatedAt: string | null;
 }
