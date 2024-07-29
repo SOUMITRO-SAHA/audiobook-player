@@ -20,54 +20,37 @@ export const playbackSettings = sqliteTable("playback_settings", {
   updatedAt: text("updated_at").default(sql`CURRENT_TIMESTAMP`),
 });
 
-export const permittedFolders = sqliteTable("permitted_folders", {
-  id: integer("id").primaryKey({ autoIncrement: true }),
-  name: text("name").notNull().unique(),
-  uri: text("uri").notNull().unique(),
-  createdAt: text("created_at").default(sql`CURRENT_TIMESTAMP`),
-  updatedAt: text("updated_at").default(sql`CURRENT_TIMESTAMP`),
-});
-
 export const folders = sqliteTable("folders", {
   id: integer("id").primaryKey({ autoIncrement: true }),
   name: text("name").notNull(),
   uri: text("uri").notNull().unique(),
+  coverImage: text("cover_image"),
+  createdAt: text("created_at").default(sql`CURRENT_TIMESTAMP`),
+  updatedAt: text("updated_at").default(sql`CURRENT_TIMESTAMP`),
+});
+
+export const track = sqliteTable("track", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  folderId: integer("folder_id"),
+  name: text("file_name").notNull(),
+  uri: text("uri").notNull(),
+  track_length: text("track_length"),
   createdAt: text("created_at").default(sql`CURRENT_TIMESTAMP`),
   updatedAt: text("updated_at").default(sql`CURRENT_TIMESTAMP`),
 });
 
 export const lastPlaying = sqliteTable("last_playing", {
   id: integer("id").primaryKey({ autoIncrement: true }),
-  fileName: text("file_name").notNull(),
-  directory: text("directory").notNull(),
-  path: text("path").notNull(),
+  trackName: text("track_name").notNull(),
+  uri: text("uri").notNull(),
   timestamp: text("timestamp").notNull(),
   createdAt: text("created_at").default(sql`CURRENT_TIMESTAMP`),
   updatedAt: text("updated_at").default(sql`CURRENT_TIMESTAMP`),
 });
 
-// Ignore this One use Track
-export const files = sqliteTable("files", {
-  id: integer("id").primaryKey({ autoIncrement: true }),
-  name: text("name").notNull(),
-  createdAt: text("created_at").default(sql`CURRENT_TIMESTAMP`),
-  updatedAt: text("updated_at").default(sql`CURRENT_TIMESTAMP`),
-  trackId: integer("track_id"),
-});
-
-export const track = sqliteTable("track", {
-  id: integer("id").primaryKey({ autoIncrement: true }),
-  coverImage: text("cover_image").notNull(),
-  fileName: text("file_name").notNull(),
-  url: text("url").notNull(),
-  createdAt: text("created_at").default(sql`CURRENT_TIMESTAMP`),
-  updatedAt: text("updated_at").default(sql`CURRENT_TIMESTAMP`),
-  filesId: integer("files_id"),
-  historyId: integer("history_id"),
-});
-
 export const history = sqliteTable("history", {
   id: integer("id").primaryKey({ autoIncrement: true }),
+  trackId: integer("track_id"),
   createdAt: text("created_at").default(sql`CURRENT_TIMESTAMP`),
   updatedAt: text("updated_at").default(sql`CURRENT_TIMESTAMP`),
 });
