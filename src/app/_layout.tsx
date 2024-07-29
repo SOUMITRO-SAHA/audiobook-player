@@ -1,9 +1,12 @@
 import { AppWideSuspense } from "@/components";
+import ParallaxScrollView from "@/components/ParallaxScrollView";
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
 import { DEFAULT_DATABASE_NAME } from "@/constants";
 import { useColorScheme } from "@/hooks/useColorScheme";
 import migrations from "@/lib/db/drizzle/migrations";
+import { StoreProvider } from "@/store";
+import { BottomSheetModalProvider } from "@gorhom/bottom-sheet";
 import {
   DarkTheme,
   DefaultTheme,
@@ -13,17 +16,15 @@ import { drizzle } from "drizzle-orm/expo-sqlite";
 import { useMigrations } from "drizzle-orm/expo-sqlite/migrator";
 import { useDrizzleStudio } from "expo-drizzle-studio-plugin";
 import { useFonts } from "expo-font";
-import * as SQLite from "expo-sqlite";
 import { Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import { SQLiteProvider } from "expo-sqlite";
 import { openDatabaseSync } from "expo-sqlite/next";
 import * as React from "react";
 import { useEffect, useState } from "react";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
 import "react-native-reanimated";
 import { RootSiblingParent } from "react-native-root-siblings";
-import ParallaxScrollView from "@/components/ParallaxScrollView";
-import { StoreProvider } from "@/store";
 
 // Database Connector
 const expoDb = openDatabaseSync(DEFAULT_DATABASE_NAME);
@@ -42,16 +43,17 @@ export default function RootLayout() {
 
   // Drizzle
   const { success, error } = useMigrations(db, migrations);
-  useDrizzleStudio(expoDb); // Initiate Drizzle Studio
+
+  // Initiate Drizzle Studio
+  useDrizzleStudio(expoDb);
 
   // Side Effects
+  useEffect(() => {}, []);
   useEffect(() => {
     if (loaded) {
       SplashScreen.hideAsync();
     }
   }, [loaded]);
-
-  console.log(expoDb);
 
   if (error) {
     return (
@@ -75,21 +77,28 @@ export default function RootLayout() {
   }
 
   return (
-    <RootSiblingParent>
-      <React.Suspense fallback={<AppWideSuspense />}>
-        <StoreProvider>
-          <SQLiteProvider useSuspense databaseName={DEFAULT_DATABASE_NAME}>
-            <ThemeProvider
-              value={colorScheme === "dark" ? DarkTheme : DefaultTheme}
-            >
-              <Stack>
-                <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-                <Stack.Screen name="+not-found" />
-              </Stack>
-            </ThemeProvider>
-          </SQLiteProvider>
-        </StoreProvider>
-      </React.Suspense>
-    </RootSiblingParent>
+    <StoreProvider>
+      <RootSiblingParent>
+        <GestureHandlerRootView>
+          <BottomSheetModalProvider>
+            <React.Suspense fallback={<AppWideSuspense />}>
+              <SQLiteProvider useSuspense databaseName={DEFAULT_DATABASE_NAME}>
+                <ThemeProvider
+                  value={colorScheme === "dark" ? DarkTheme : DefaultTheme}
+                >
+                  <Stack>
+                    <Stack.Screen
+                      name="(tabs)"
+                      options={{ headerShown: false }}
+                    />
+                    <Stack.Screen name="+not-found" />
+                  </Stack>
+                </ThemeProvider>
+              </SQLiteProvider>
+            </React.Suspense>
+          </BottomSheetModalProvider>
+        </GestureHandlerRootView>
+      </RootSiblingParent>
+    </StoreProvider>
   );
 }
