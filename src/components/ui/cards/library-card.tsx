@@ -1,44 +1,60 @@
 import { getRandomGradient } from "@/components/gradients";
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
-import { Folder } from "@/types/database";
-import { LinearGradient } from "expo-linear-gradient";
-import React, { useMemo } from "react";
-import { StyleSheet } from "react-native";
-import { MaterialIcons } from "@expo/vector-icons";
 import { Colors } from "@/constants";
-import { Link } from "expo-router";
+import { Folder } from "@/types/database";
+import { Entypo } from "@expo/vector-icons";
+import { LinearGradient } from "expo-linear-gradient";
+import { router } from "expo-router";
+import React, { useMemo } from "react";
+import { Pressable, StyleSheet, TouchableOpacity } from "react-native";
 
-interface LibraryProps extends Folder {}
+interface LibraryProps extends Folder {
+  onPressThreeDots: (value: number) => void;
+}
 
 export const LibraryCard: React.FC<LibraryProps> = (props) => {
   // Memoization
   const color = useMemo(() => getRandomGradient(), []);
 
+  // <Link href={`/contents/${props.id}`}>
   return (
-    <ThemedView
-      className="flex flex-row items-center justify-between grid-cols-12 p-2 px-4 space-x-3 rounded-lg shadow-xl"
-      style={{ backgroundColor: Colors.dark.muted }}
+    <TouchableOpacity
+      style={styles.container}
+      className="flex flex-row items-center justify-between w-full p-2 px-3 space-x-3 bg-red-500 rounded-lg shadow-xl"
+      onPress={() => {
+        router.navigate(`/contents/${props.id}`);
+      }}
     >
-      <ThemedView className="flex flex-row items-center space-x-3 bg-transparent w-[90%]">
+      <ThemedView className="flex flex-row items-center space-x-3 w-[90%] bg-transparent">
         <LinearGradient colors={color} style={styles.gradient} />
         <ThemedText className="text-gray-400">{props.name}</ThemedText>
       </ThemedView>
 
-      <Link href={`/contents/${props.id}`}>
+      <Pressable
+        className="W-[10%]"
+        onPress={() => {
+          props.onPressThreeDots(props.id);
+        }}
+      >
         <ThemedView className="bg-transparent">
-          <MaterialIcons
-            name="arrow-forward-ios"
+          <Entypo
+            name="dots-three-vertical"
             size={24}
-            color={Colors.dark.mutedForeground}
+            style={{
+              color: "#a4b6ce",
+            }}
           />
         </ThemedView>
-      </Link>
-    </ThemedView>
+      </Pressable>
+    </TouchableOpacity>
   );
 };
 
 const styles = StyleSheet.create({
+  container: {
+    backgroundColor: Colors.dark.muted,
+  },
   gradient: {
     height: 40,
     width: 40,
