@@ -1,6 +1,8 @@
 export const extractUriToGetName = (uri: string) => {
-  if (uri.includes("%3A")) {
-    const folderName = uri.split("%3A").pop();
+  let encodedUri = decodeURIComponent(uri);
+
+  if (uri.includes("/")) {
+    const folderName = encodedUri.split("/").pop();
     return folderName;
   }
   return "Unknown";
