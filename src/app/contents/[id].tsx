@@ -1,11 +1,7 @@
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
-import { db } from "@/lib/db";
-import {
-  addAllFilesToFolder,
-  fetchFolderById,
-} from "@/lib/services/file-system";
-import { Folder } from "@/types/database";
+import { fetchAllFilesByFolderId, fetchFolderByFolderId } from "@/lib/db/query";
+import { Folder, Track } from "@/types/database";
 import { useLocalSearchParams, useNavigation } from "expo-router";
 import * as React from "react";
 
@@ -14,14 +10,25 @@ const ContentById = () => {
   const navigation = useNavigation();
 
   const [folderInfo, setFolderInfo] = React.useState<Folder | null>(null);
+  const [allFiles, setAllFiles] = React.useState<Track[] | null>(null);
+
+  console.log("Folder Info", folderInfo);
+  console.log("All files: ", allFiles);
 
   // Side Effects
   React.useEffect(() => {
     const getAllFilesByFolderId = async (folderId: string) => {
       try {
-        const files = await fetchFolderById(folderId);
-        if (files.length > 0) {
-          setFolderInfo(files[0]);
+        const folder = await fetchFolderByFolderId(Number(folderId));
+
+        if (folder) {
+          setFolderInfo(folder);
+        }
+
+        const files = await fetchAllFilesByFolderId(Number(folderId));
+
+        if (files) {
+          setAllFiles(files);
         }
       } catch (error) {
         console.error("Error fetching folder:", error);
@@ -35,27 +42,22 @@ const ContentById = () => {
 
   React.useEffect(() => {
     if (folderInfo) {
-      const getAllFilesByFolderUri = async (uri: string) => {
-        try {
-          const files = await addAllFilesToFolder(uri);
-        } catch (error) {
-          console.error(`Error adding files to the database:`, error);
-        }
-      };
-
-      getAllFilesByFolderUri(folderInfo.uri);
-    }
-  }, [folderInfo]);
-
-  React.useEffect(() => {
-    if (folderInfo) {
       navigation.setOptions({ title: folderInfo.name });
     }
   }, [id, navigation, folderInfo]);
 
   return (
     <ThemedView className="w-screen h-screen bg-gray-900">
-      <ThemedText>ThemedView</ThemedText>
+      <ThemedText>
+        Content by ID: {id}
+        {folderInfo && <ThemedText>{folderInfo.name}</ThemedText>}
+      </ThemedText>
+      {allFiles &&
+        allFiles.map((file) => (
+          <ThemedView key={file.id}>
+            <ThemedText>{file.name}</ThemedText>
+          </ThemedView>
+        ))}
     </ThemedView>
   );
 };
