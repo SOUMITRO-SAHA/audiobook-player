@@ -1,41 +1,59 @@
+import { BottomSheet } from "@/components";
 import ParallaxScrollView from "@/components/ParallaxScrollView";
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
 import { AddNewAlbumButton, LibraryCard } from "@/components/ui";
 import { Colors } from "@/constants";
-import { fetchAllFolders } from "@/lib/db/query";
-import {
-  addNewFolder,
-  addSubfolderUnderMainFolder,
-} from "@/lib/services/file-system";
+import { deleteFolderByFolderId, fetchAllFolders } from "@/lib/db/query";
+import { addNewFolder } from "@/lib/services/file-system";
 import { cn } from "@/lib/utils";
-import { resetIsLoading, selectFolder } from "@/store/slice";
+import {
+  resetIsLoading,
+  resetLibraryLoading,
+  selectFolder,
+  selectLibrary,
+  setLibraryLoading,
+} from "@/store/slice";
 import { Folder } from "@/types/database";
-import { AntDesign } from "@expo/vector-icons";
-import { LinearGradient } from "expo-linear-gradient";
-import { useEffect, useState } from "react";
-import { ActivityIndicator, FlatList, StyleSheet } from "react-native";
+import { MaterialIcons } from "@expo/vector-icons";
+import { BottomSheetModal } from "@gorhom/bottom-sheet";
+import { useEffect, useRef, useState } from "react";
+import { ActivityIndicator, FlatList, TouchableOpacity } from "react-native";
 import { useDispatch, useSelector } from "react-redux";
 
 export default function LibraryScreen() {
   const [refreshCount, setRefreshCount] = useState<number>(0);
   const [refreshing, setRefreshing] = useState<boolean>(false);
   const [folders, setFolders] = useState<Folder[] | null>(null);
+  const [selectedBottomSheetItem, setSelectedBottomSheetItem] = useState<
+    number | null
+  >(null);
+
+  // ref
+  const bottomSheetModalRef = useRef<BottomSheetModal>(null);
 
   // Redux
   const { loading } = useSelector(selectFolder);
+  const { libraryLoading } = useSelector(selectLibrary);
   const dispatch = useDispatch();
 
   // Function
   const handleAddNewAlbum = async () => {
-    await addNewFolder();
+    dispatch(setLibraryLoading());
+    try {
+      await addNewFolder();
+    } catch (error) {
+      dispatch(resetLibraryLoading());
+    } finally {
+      dispatch(resetLibraryLoading());
+    }
   };
 
   const handleRefresh = async () => {
     setRefreshing(true);
     dispatch(resetIsLoading());
     try {
-      const res = await addSubfolderUnderMainFolder();
+      // const res = await addSubfolderUnderMainFolder();
       // if (res) {
       //   dispatch(setIsLoading());
       // }
@@ -52,6 +70,24 @@ export default function LibraryScreen() {
     }
   };
 
+  const handleThreeDotPress = (value: number) => {
+    bottomSheetModalRef.current?.present();
+    setSelectedBottomSheetItem(value);
+  };
+
+  const handleDeleteFolder = async (value: number) => {
+    dispatch(setLibraryLoading());
+    try {
+      await deleteFolderByFolderId(value);
+    } catch (error) {
+      console.error(error);
+    } finally {
+      bottomSheetModalRef.current?.dismiss();
+      setSelectedBottomSheetItem(null);
+      dispatch(resetLibraryLoading());
+    }
+  };
+
   // Side Effect
   useEffect(() => {
     const getFolders = async () => {
@@ -62,11 +98,15 @@ export default function LibraryScreen() {
     };
 
     getFolders();
-  }, [loading]);
+  }, [libraryLoading]);
 
+  // Render Components
   const renderLoadingCard = () => {
     return (
-      <ThemedView className="my-4">
+      <ThemedView
+        className="p-4 rounded-xl"
+        style={{ backgroundColor: Colors.dark.muted }}
+      >
         <ActivityIndicator color={Colors.dark.primary} size={"large"} />
       </ThemedView>
     );
@@ -78,28 +118,24 @@ export default function LibraryScreen() {
         <FlatList
           data={folders}
           renderItem={({ item }) => {
-            return <LibraryCard {...item} />;
+            return (
+              <LibraryCard {...item} onPressThreeDots={handleThreeDotPress} />
+            );
           }}
           ItemSeparatorComponent={() => {
             return <ThemedView style={{ height: 5 }} />;
           }}
           ListEmptyComponent={() => (
-            <ThemedView className="flex items-center justify-center p-3 mt-6 bg-slate-800/80 rounded-xl">
-              <ThemedText className="mt-6 text-gray-400">
+            <ThemedView className="flex items-center justify-center p-3 py-6 mt-6 bg-slate-800/80 rounded-xl">
+              <ThemedText className="mt-3 text-gray-400">
                 No Content Found!!!
               </ThemedText>
               {refreshCount <= 3 ? (
                 <>
-                  <ThemedText className="mt-1 text-xl text-gray-300">
-                    Pull down to Refresh
+                  <ThemedText className="my-3 text-xl text-center text-gray-400">
+                    Press the "+" button down below to add a new folder to the
+                    application
                   </ThemedText>
-                  <ThemedView className="p-3 mt-3 rounded-full bg-black/40">
-                    <AntDesign
-                      name="arrowdown"
-                      size={28}
-                      color={Colors.dark.primary}
-                    />
-                  </ThemedView>
                 </>
               ) : (
                 <>
@@ -137,10 +173,33 @@ export default function LibraryScreen() {
       <ThemedView>{renderLibraryCards()}</ThemedView>
 
       {/* For Loading New Card */}
-      <ThemedView>{loading && renderLoadingCard()}</ThemedView>
+      <ThemedView>{libraryLoading && renderLoadingCard()}</ThemedView>
 
       {/* Add button */}
       <AddNewAlbumButton onPress={handleAddNewAlbum} />
+
+      {/* Bottom Sheet Modal */}
+      <BottomSheet ref={bottomSheetModalRef}>
+        {/* Delete */}
+        <TouchableOpacity
+          onPress={async () => {
+            if (selectedBottomSheetItem)
+              await handleDeleteFolder(selectedBottomSheetItem);
+          }}
+        >
+          <ThemedView
+            className="flex-row items-center p-2 px-5 space-x-2 rounded-xl"
+            style={{ backgroundColor: Colors.dark.card }}
+          >
+            <MaterialIcons
+              name="delete-sweep"
+              size={32}
+              color={Colors.light.destructive}
+            />
+            <ThemedText className="text-lg">Delete this Folder</ThemedText>
+          </ThemedView>
+        </TouchableOpacity>
+      </BottomSheet>
     </ParallaxScrollView>
   );
 }
