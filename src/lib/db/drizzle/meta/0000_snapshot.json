@@ -1,7 +1,7 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "efd3c043-1d88-4b2c-892b-678f0227cc43",
+  "id": "a93d55ed-8413-4bf0-bfdc-679781424dba",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
     "account": {
@@ -59,52 +59,6 @@
       "compositePrimaryKeys": {},
       "uniqueConstraints": {}
     },
-    "files": {
-      "name": "files",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "integer",
-          "primaryKey": true,
-          "notNull": true,
-          "autoincrement": true
-        },
-        "name": {
-          "name": "name",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "created_at": {
-          "name": "created_at",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false,
-          "default": "CURRENT_TIMESTAMP"
-        },
-        "updated_at": {
-          "name": "updated_at",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false,
-          "default": "CURRENT_TIMESTAMP"
-        },
-        "track_id": {
-          "name": "track_id",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        }
-      },
-      "indexes": {},
-      "foreignKeys": {},
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {}
-    },
     "folders": {
       "name": "folders",
       "columns": {
@@ -127,6 +81,13 @@
           "type": "text",
           "primaryKey": false,
           "notNull": true,
+          "autoincrement": false
+        },
+        "cover_image": {
+          "name": "cover_image",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
           "autoincrement": false
         },
         "created_at": {
@@ -169,6 +130,13 @@
           "notNull": true,
           "autoincrement": true
         },
+        "track_id": {
+          "name": "track_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
         "created_at": {
           "name": "created_at",
           "type": "text",
@@ -201,22 +169,15 @@
           "notNull": true,
           "autoincrement": true
         },
-        "file_name": {
-          "name": "file_name",
+        "track_name": {
+          "name": "track_name",
           "type": "text",
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false
         },
-        "directory": {
-          "name": "directory",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "path": {
-          "name": "path",
+        "uri": {
+          "name": "uri",
           "type": "text",
           "primaryKey": false,
           "notNull": true,
@@ -325,11 +286,11 @@
           "notNull": true,
           "autoincrement": true
         },
-        "cover_image": {
-          "name": "cover_image",
-          "type": "text",
+        "folder_id": {
+          "name": "folder_id",
+          "type": "integer",
           "primaryKey": false,
-          "notNull": true,
+          "notNull": false,
           "autoincrement": false
         },
         "file_name": {
@@ -339,11 +300,18 @@
           "notNull": true,
           "autoincrement": false
         },
-        "url": {
-          "name": "url",
+        "uri": {
+          "name": "uri",
           "type": "text",
           "primaryKey": false,
           "notNull": true,
+          "autoincrement": false
+        },
+        "track_length": {
+          "name": "track_length",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
           "autoincrement": false
         },
         "created_at": {
@@ -361,20 +329,6 @@
           "notNull": false,
           "autoincrement": false,
           "default": "CURRENT_TIMESTAMP"
-        },
-        "files_id": {
-          "name": "files_id",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
-        "history_id": {
-          "name": "history_id",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
         }
       },
       "indexes": {},

@@ -7,33 +7,26 @@ CREATE TABLE `account` (
 	`updated_at` text DEFAULT CURRENT_TIMESTAMP
 );
 --> statement-breakpoint
-CREATE TABLE `files` (
-	`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL,
-	`name` text NOT NULL,
-	`created_at` text DEFAULT CURRENT_TIMESTAMP,
-	`updated_at` text DEFAULT CURRENT_TIMESTAMP,
-	`track_id` integer
-);
---> statement-breakpoint
 CREATE TABLE `folders` (
 	`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL,
 	`name` text NOT NULL,
 	`uri` text NOT NULL,
+	`cover_image` text,
 	`created_at` text DEFAULT CURRENT_TIMESTAMP,
 	`updated_at` text DEFAULT CURRENT_TIMESTAMP
 );
 --> statement-breakpoint
 CREATE TABLE `history` (
 	`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL,
+	`track_id` integer,
 	`created_at` text DEFAULT CURRENT_TIMESTAMP,
 	`updated_at` text DEFAULT CURRENT_TIMESTAMP
 );
 --> statement-breakpoint
 CREATE TABLE `last_playing` (
 	`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL,
-	`file_name` text NOT NULL,
-	`directory` text NOT NULL,
-	`path` text NOT NULL,
+	`track_name` text NOT NULL,
+	`uri` text NOT NULL,
 	`timestamp` text NOT NULL,
 	`created_at` text DEFAULT CURRENT_TIMESTAMP,
 	`updated_at` text DEFAULT CURRENT_TIMESTAMP
@@ -51,13 +44,12 @@ CREATE TABLE `playback_settings` (
 --> statement-breakpoint
 CREATE TABLE `track` (
 	`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL,
-	`cover_image` text NOT NULL,
+	`folder_id` integer,
 	`file_name` text NOT NULL,
-	`url` text NOT NULL,
+	`uri` text NOT NULL,
+	`track_length` text,
 	`created_at` text DEFAULT CURRENT_TIMESTAMP,
-	`updated_at` text DEFAULT CURRENT_TIMESTAMP,
-	`files_id` integer,
-	`history_id` integer
+	`updated_at` text DEFAULT CURRENT_TIMESTAMP
 );
 --> statement-breakpoint
 CREATE UNIQUE INDEX `folders_uri_unique` ON `folders` (`uri`);
