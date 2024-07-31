@@ -36,3 +36,17 @@ export const extractSubFolderNameFromUri = (uri: string): string | null => {
     return null;
   }
 };
+
+export function formatTime(seconds: number): string {
+  const hours = Math.floor(seconds / 3600);
+  const minutes = Math.floor((seconds % 3600) / 60);
+  const remainingSeconds = Math.round(seconds % 60);
+
+  const pad = (num: number): string => (num < 10 ? "0" + num : num.toString());
+
+  if (hours > 0) {
+    return `${pad(hours)}:${pad(minutes)}:${pad(remainingSeconds)}`;
+  } else {
+    return `${pad(minutes)}:${pad(remainingSeconds)}`;
+  }
+}
