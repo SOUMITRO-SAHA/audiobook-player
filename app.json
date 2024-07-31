@@ -30,7 +30,13 @@
     },
     "plugins": [
       "expo-router",
-      "expo-asset"
+      "expo-asset",
+      [
+        "expo-media-library",
+        {
+          "storagePermission": "Allow $(PRODUCT_NAME) to access your storage."
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true
