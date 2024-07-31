@@ -1,7 +1,7 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "a93d55ed-8413-4bf0-bfdc-679781424dba",
+  "id": "c135d1df-59f0-44a4-8e0e-7211b5ba932f",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
     "account": {
@@ -286,11 +286,18 @@
           "notNull": true,
           "autoincrement": true
         },
-        "folder_id": {
-          "name": "folder_id",
+        "actual_folder_id": {
+          "name": "actual_folder_id",
           "type": "integer",
           "primaryKey": false,
           "notNull": false,
+          "autoincrement": false
+        },
+        "folder_id": {
+          "name": "folder_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
           "autoincrement": false
         },
         "file_name": {
@@ -307,8 +314,15 @@
           "notNull": true,
           "autoincrement": false
         },
-        "track_length": {
-          "name": "track_length",
+        "duration": {
+          "name": "duration",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "album_id": {
+          "name": "album_id",
           "type": "text",
           "primaryKey": false,
           "notNull": false,

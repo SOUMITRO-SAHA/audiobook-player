@@ -44,10 +44,12 @@ CREATE TABLE `playback_settings` (
 --> statement-breakpoint
 CREATE TABLE `track` (
 	`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL,
-	`folder_id` integer,
+	`actual_folder_id` integer,
+	`folder_id` text NOT NULL,
 	`file_name` text NOT NULL,
 	`uri` text NOT NULL,
-	`track_length` text,
+	`duration` text NOT NULL,
+	`album_id` text,
 	`created_at` text DEFAULT CURRENT_TIMESTAMP,
 	`updated_at` text DEFAULT CURRENT_TIMESTAMP
 );
