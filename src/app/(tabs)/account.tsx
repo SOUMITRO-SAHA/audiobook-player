@@ -2,15 +2,17 @@ import ParallaxScrollView from "@/components/ParallaxScrollView";
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
 import { Button, InputBox, SelectDropdown } from "@/components/ui";
+import { Colors } from "@/constants";
 import { db } from "@/lib/db";
-import { fetchAccount, fetchPermittedFolders } from "@/lib/db/query";
+import { fetchAccount, fetchAllFolders } from "@/lib/db/query";
 import { account } from "@/lib/db/schema";
 import { seedDefaultAccount } from "@/lib/db/seed";
 import { updateAccount } from "@/store/slice";
-import { Account, PermittedFolder } from "@/types/database";
+import { Account, Folder } from "@/types/database";
 import { eq } from "drizzle-orm";
 import React, { useEffect, useState } from "react";
 import { Appearance, ToastAndroid, useColorScheme } from "react-native";
+import { TouchableOpacity } from "react-native-gesture-handler";
 import { useDispatch } from "react-redux";
 
 const initialFormData = {
@@ -21,9 +23,7 @@ const initialFormData = {
 const AccountScreen = () => {
   const [formData, setFormData] = useState(initialFormData);
   const [accountData, setAccountData] = useState<Account | null>(null);
-  const [permittedFolders, setPermittedFolders] = useState<
-    PermittedFolder[] | null
-  >(null);
+  const [folders, setFolders] = useState<Folder[] | null>(null);
   const [theme, setTheme] = useState("dark");
 
   // Redux
@@ -81,8 +81,8 @@ const AccountScreen = () => {
     };
 
     const getPermittedFolders = async () => {
-      const res = await fetchPermittedFolders();
-      if (res) setPermittedFolders(res);
+      const res = await fetchAllFolders();
+      if (res) setFolders(res);
     };
 
     getAccountInfo();
@@ -103,7 +103,7 @@ const AccountScreen = () => {
     if (accountData && accountData.username) {
       setFormData((prev) => ({
         ...prev,
-        username: accountData?.username,
+        username: accountData.username ? accountData.username : "Undefine",
       }));
     }
   }, [accountData]);
@@ -153,20 +153,29 @@ const AccountScreen = () => {
       </ThemedView>
 
       {/* Permitted Folders */}
-      <ThemedView>
-        <ThemedText className="px-1 mb-1">Permitted Folders</ThemedText>
-        <ThemedView className="flex flex-row items-center space-x-2">
-          {permittedFolders &&
-            permittedFolders.map((permittedFolder) => (
-              <ThemedText className="items-center justify-center p-2 px-3 bg-slate-400 rounded-xl">
-                {permittedFolder?.name}
-              </ThemedText>
-            ))}
+      {folders && (
+        <ThemedView>
+          <ThemedText className="px-1 mb-1">Permitted Folders</ThemedText>
+          <ThemedView className="flex flex-row items-center space-x-2">
+            {folders &&
+              folders.map((folder) => (
+                <ThemedText className="items-center justify-center p-2 px-3 bg-slate-400 rounded-xl">
+                  {folder?.name}
+                </ThemedText>
+              ))}
+          </ThemedView>
         </ThemedView>
-      </ThemedView>
+      )}
 
       <ThemedView style={{ flex: 1 }}>
-        <Button onPress={handleAccountUpdate} />
+        <TouchableOpacity onPress={handleAccountUpdate}>
+          <ThemedView
+            className="flex items-center justify-center w-full h-12 mt-5 rounded-xl"
+            style={{ backgroundColor: Colors.dark.primary }}
+          >
+            <ThemedText className="text-lg">Save</ThemedText>
+          </ThemedView>
+        </TouchableOpacity>
       </ThemedView>
     </ParallaxScrollView>
   );

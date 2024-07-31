@@ -3,9 +3,10 @@ import ParallaxScrollView from "@/components/ParallaxScrollView";
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
 import { AddNewAlbumButton, LibraryCard } from "@/components/ui";
+import { DeleteModal } from "@/components/ui/modals";
 import { Colors } from "@/constants";
 import { deleteFolderByFolderId, fetchAllFolders } from "@/lib/db/query";
-import { addNewFolder } from "@/lib/services/file-system";
+import { addNewMediaLibrary } from "@/lib/services/media-library";
 import { cn } from "@/lib/utils";
 import {
   resetIsLoading,
@@ -28,6 +29,7 @@ export default function LibraryScreen() {
   const [selectedBottomSheetItem, setSelectedBottomSheetItem] = useState<
     number | null
   >(null);
+  const [shouldRenderDeleteModal, setShouldRenderDeleteModal] = useState(false);
 
   // ref
   const bottomSheetModalRef = useRef<BottomSheetModal>(null);
@@ -41,7 +43,8 @@ export default function LibraryScreen() {
   const handleAddNewAlbum = async () => {
     dispatch(setLibraryLoading());
     try {
-      await addNewFolder();
+      // await addNewFolder();
+      await addNewMediaLibrary();
     } catch (error) {
       dispatch(resetLibraryLoading());
     } finally {
@@ -75,10 +78,17 @@ export default function LibraryScreen() {
     setSelectedBottomSheetItem(value);
   };
 
-  const handleDeleteFolder = async (value: number) => {
-    dispatch(setLibraryLoading());
+  const handleDeleteFolder = async () => {
     try {
-      await deleteFolderByFolderId(value);
+      dispatch(setLibraryLoading());
+
+      if (selectedBottomSheetItem) {
+        const res = await deleteFolderByFolderId(selectedBottomSheetItem);
+        if (res) {
+          setShouldRenderDeleteModal(false);
+          dispatch(resetLibraryLoading());
+        }
+      }
     } catch (error) {
       console.error(error);
     } finally {
@@ -178,13 +188,21 @@ export default function LibraryScreen() {
       {/* Add button */}
       <AddNewAlbumButton onPress={handleAddNewAlbum} />
 
+      {/* Confirm Delete Modal */}
+      <DeleteModal
+        isOpen={shouldRenderDeleteModal}
+        setIsOpen={setShouldRenderDeleteModal}
+        handleDeleteFun={handleDeleteFolder}
+      />
+
       {/* Bottom Sheet Modal */}
       <BottomSheet ref={bottomSheetModalRef}>
         {/* Delete */}
         <TouchableOpacity
-          onPress={async () => {
-            if (selectedBottomSheetItem)
-              await handleDeleteFolder(selectedBottomSheetItem);
+          onPress={() => {
+            if (selectedBottomSheetItem) {
+              setShouldRenderDeleteModal((prev) => !prev);
+            }
           }}
         >
           <ThemedView
