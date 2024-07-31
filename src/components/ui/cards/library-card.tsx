@@ -23,7 +23,10 @@ export const LibraryCard: React.FC<LibraryProps> = (props) => {
       style={styles.container}
       className="flex flex-row items-center justify-between w-full p-2 px-3 space-x-3 bg-red-500 rounded-lg shadow-xl"
       onPress={() => {
-        router.navigate(`/contents/${props.id}`);
+        router.push({
+          pathname: `[id]`,
+          params: { id: props.id },
+        });
       }}
     >
       <ThemedView className="flex flex-row items-center space-x-3 w-[90%] bg-transparent">
