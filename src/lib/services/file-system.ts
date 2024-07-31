@@ -1,9 +1,9 @@
+import { db } from "@/lib/db";
+import { folders } from "@/lib/db/schema";
 import { extractUriToGetName } from "@/lib/utils";
 import { eq } from "drizzle-orm";
 import * as FileSystem from "expo-file-system";
 import { ToastAndroid } from "react-native";
-import { db } from "@/lib/db";
-import { folders, track } from "@/lib/db/schema";
 
 export const addNewFolder = async () => {
   try {
@@ -35,13 +35,7 @@ export const addNewFolder = async () => {
         const folderName = extractUriToGetName(uri);
 
         // First Create a folder in the database
-        let newFolder:
-          | {
-              id: number;
-            }[]
-          | undefined
-          | null;
-
+        let newFolder;
         if (uri && folderName) {
           newFolder = await db
             .insert(folders)
@@ -51,10 +45,9 @@ export const addNewFolder = async () => {
             })
             .returning({
               id: folders.id,
+              name: folders.name,
             });
         }
-
-        console.log("New Folder ===>", newFolder);
 
         // Getting all the files in the folder
         const files =
@@ -63,9 +56,6 @@ export const addNewFolder = async () => {
         // Then add to the Database
         await Promise.all(
           files.map(async (file) => {
-            const fileUri = file;
-            console.log("File Uri", fileUri);
-
             // Extracting the Images from the files
             if (
               file.includes(".jpg") ||
@@ -73,48 +63,40 @@ export const addNewFolder = async () => {
               file.includes(".jpeg")
             ) {
               if (file) coverImages.push(file);
-            } else if (
-              file.includes(".mp3") ||
-              file.includes(".wav") ||
-              file.includes(".aac")
-            ) {
-              // Extracting the file name from the URI
-              const extractedFileName = extractUriToGetName(fileUri);
-
-              console.log("File Name ===>", extractedFileName);
-
-              if (newFolder && fileUri && extractedFileName) {
-                const response = await db.insert(track).values({
-                  folderId: newFolder[0]?.id,
-                  name: extractedFileName,
-                  uri: fileUri,
-                });
-
-                console.log("File from Database ===>", response);
-
-                if (response) {
-                  console.log("File Added Successfully!!!");
-                } else {
-                  console.error("Failed to Add the file");
-                }
-              }
             }
           })
         );
 
-        console.log("Cover Images", coverImages);
+        // Adding the Images to the Database
         if (coverImages.length > 0 && newFolder) {
           const firstImage = coverImages[0];
 
-          await db
+          const response = await db
             .update(folders)
             .set({
               coverImage: firstImage,
             })
-            .where(eq(folders.id, newFolder[0]?.id));
+            .where(eq(folders.id, newFolder[0]?.id))
+            .returning({
+              id: folders.id,
+              name: folders.name,
+            });
+
+          if (response.length > 0) {
+            return response[0];
+          } else {
+            return null;
+          }
+        }
+
+        if (newFolder) {
+          return newFolder[0];
+        } else {
+          return null;
         }
       } else {
         ToastAndroid.show("Folder Already Exists!!!", ToastAndroid.SHORT);
+        return existingFolder[0];
       }
     }
   } catch (error) {
