@@ -1,6 +1,6 @@
 CREATE TABLE `account` (
 	`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL,
-	`username` text NOT NULL,
+	`username` text DEFAULT 'Guest',
 	`installed` integer DEFAULT false,
 	`theme` text DEFAULT 'system',
 	`created_at` text DEFAULT CURRENT_TIMESTAMP,
