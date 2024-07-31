@@ -48,13 +48,13 @@ export default function RootLayout() {
   useDrizzleStudio(expoDb);
 
   // Side Effects
-  useEffect(() => {}, []);
   useEffect(() => {
     if (loaded) {
       SplashScreen.hideAsync();
     }
   }, [loaded]);
 
+  // Renders
   if (error) {
     return (
       <ParallaxScrollView>
