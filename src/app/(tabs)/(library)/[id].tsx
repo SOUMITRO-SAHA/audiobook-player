@@ -1,14 +1,15 @@
+import ParallaxScrollView from "@/components/ParallaxScrollView";
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
-import { Button } from "@/components/ui";
 import { Colors } from "@/constants";
 import { fetchAllFilesByFolderId, fetchFolderByFolderId } from "@/lib/db/query";
+import { formatTime } from "@/lib/utils";
 import { Folder, Track } from "@/types/database";
 import { AntDesign, Entypo, FontAwesome } from "@expo/vector-icons";
 import { Image } from "expo-image";
 import { useLocalSearchParams, useNavigation } from "expo-router";
 import * as React from "react";
-import { FlatList, ScrollView, StyleSheet, View } from "react-native";
+import { FlatList, ScrollView, StyleSheet } from "react-native";
 import { TouchableOpacity } from "react-native-gesture-handler";
 
 const LibraryContentScreen = () => {
@@ -54,7 +55,7 @@ const LibraryContentScreen = () => {
 
   const renderAudioFiles = () => {
     return (
-      <ThemedView className="px-8">
+      <ThemedView>
         <FlatList
           data={allFiles}
           renderItem={({ item, index }) => (
@@ -76,7 +77,7 @@ const LibraryContentScreen = () => {
                   <ThemedText> {item.name}</ThemedText>
                 </ThemedView>
                 <ThemedText className="mt-1 text-sm text-slate-400">
-                  03:40
+                  {item.duration ? formatTime(Number(item.duration)) : ""}
                 </ThemedText>
               </ThemedView>
 
@@ -96,29 +97,31 @@ const LibraryContentScreen = () => {
   };
 
   return (
-    <ScrollView>
-      <ThemedView className="w-screen h-screen" style={styles.container}>
-        <ThemedView className="mx-auto mb-16 bg-transparent">
-          <Image source={folderInfo?.coverImage} style={styles.coverImage} />
+    <ParallaxScrollView>
+      <ScrollView>
+        <ThemedView style={styles.container}>
+          <ThemedView className="mx-auto mb-16 bg-transparent">
+            <Image source={folderInfo?.coverImage} style={styles.coverImage} />
 
-          <TouchableOpacity className="absolute -bottom-8 left-1/2">
-            <ThemedView
-              style={styles.playButton}
-              className="flex flex-row items-center justify-center w-16 h-16 space-x-3 rounded-full"
-            >
-              <AntDesign
-                name="caretright"
-                size={25}
-                color={Colors.dark.primary}
-              />
-            </ThemedView>
-          </TouchableOpacity>
+            <TouchableOpacity className="absolute -bottom-8 left-1/2">
+              <ThemedView
+                style={styles.playButton}
+                className="flex flex-row items-center justify-center w-16 h-16 space-x-3 rounded-full"
+              >
+                <AntDesign
+                  name="caretright"
+                  size={25}
+                  color={Colors.dark.background}
+                />
+              </ThemedView>
+            </TouchableOpacity>
+          </ThemedView>
+
+          {/* Audio Files */}
+          {renderAudioFiles()}
         </ThemedView>
-
-        {/* Audio Files */}
-        {renderAudioFiles()}
-      </ThemedView>
-    </ScrollView>
+      </ScrollView>
+    </ParallaxScrollView>
   );
 };
 
@@ -127,7 +130,7 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.dark.background,
   },
   playButton: {
-    backgroundColor: Colors.dark.muted,
+    backgroundColor: Colors.dark.primary,
     transform: [{ translateX: -40 }],
   },
   coverImage: {
