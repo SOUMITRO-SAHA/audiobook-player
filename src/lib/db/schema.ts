@@ -31,10 +31,12 @@ export const folders = sqliteTable("folders", {
 
 export const track = sqliteTable("track", {
   id: integer("id").primaryKey({ autoIncrement: true }),
-  folderId: integer("folder_id"),
+  dbFolderId: integer("actual_folder_id"),
+  folderId: text("folder_id").notNull(),
   name: text("file_name").notNull(),
   uri: text("uri").notNull(),
-  track_length: text("track_length"),
+  duration: text("duration").notNull(),
+  albumId: text("album_id"),
   createdAt: text("created_at").default(sql`CURRENT_TIMESTAMP`),
   updatedAt: text("updated_at").default(sql`CURRENT_TIMESTAMP`),
 });
