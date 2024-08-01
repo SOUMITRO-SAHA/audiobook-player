@@ -4,44 +4,80 @@ import ParallaxScrollView from "@/components/ParallaxScrollView";
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
 import { fetchAccount } from "@/lib/db/query";
-import { resetAccount, selectAccount } from "@/store/slice";
+import {
+  resetAccount,
+  resetIsLoading,
+  selectAccount,
+  selectApp,
+  setAppLoading,
+} from "@/store/slice";
 import { Account } from "@/types/database";
-import { MaterialIcons } from "@expo/vector-icons";
+import { Ionicons, MaterialIcons } from "@expo/vector-icons";
 import * as React from "react";
 import { useDispatch, useSelector } from "react-redux";
+import { Colors } from "@/constants";
+import { TouchableOpacity } from "react-native-gesture-handler";
 
 export default function HomeScreen() {
   const [account, setAccount] = React.useState<Account | null>(null);
 
-  // Redux
+  // Redux Store
   const { updated } = useSelector(selectAccount);
+  const { isLoading } = useSelector(selectApp);
+
+  // Dispatch
   const dispatch = useDispatch();
+
+  // Fetching Account
+  const getAccount = async () => {
+    const res = await fetchAccount();
+    if (res) {
+      setAccount(res);
+
+      // Dispatch Account
+      dispatch(resetAccount());
+    }
+  };
 
   // Side Effects
   React.useEffect(() => {
-    // Fetching Account
-    const getAccount = async () => {
-      const res = await fetchAccount();
-      if (res) {
-        setAccount(res);
+    const timestamp = setTimeout(() => {
+      // Calling Account Update
+      getAccount();
 
-        // Dispatch Account
-        dispatch(resetAccount());
+      // Updating the App loading
+      if (isLoading) {
+        dispatch(resetIsLoading());
       }
-    };
-
-    // Fetching Folders
-    // fetchAllFolders();
-
-    getAccount();
-  }, [updated]);
+    }, 100);
+    return () => clearTimeout(timestamp);
+  }, [updated, isLoading]);
 
   return (
     <ParallaxScrollView className="relative">
-      <ThemedView>
+      <ThemedView className="flex-row items-center justify-between">
         <ThemedText type="title" className="capitalize">{`Welcome, ${
           account?.username?.split(" ")[0]
         }`}</ThemedText>
+
+        <TouchableOpacity
+          onPress={() => {
+            dispatch(setAppLoading());
+          }}
+        >
+          <ThemedView
+            className="w-10 h-10 p-2 rounded-lg"
+            style={{
+              backgroundColor: Colors.dark.muted,
+            }}
+          >
+            <Ionicons
+              name="reload-outline"
+              size={24}
+              color={Colors.dark.foreground}
+            />
+          </ThemedView>
+        </TouchableOpacity>
       </ThemedView>
 
       <ThemedView className="flex flex-row items-center space-x-2 text-xl">

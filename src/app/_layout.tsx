@@ -4,6 +4,8 @@ import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
 import { DEFAULT_DATABASE_NAME } from "@/constants";
 import { useColorScheme } from "@/hooks/useColorScheme";
+import useLogTrackPlayerState from "@/hooks/useLogTrackPlayerState";
+import useSetupTrackPlayer from "@/hooks/useSetupTrackPlayer";
 import migrations from "@/lib/db/drizzle/migrations";
 import { StoreProvider } from "@/store";
 import { BottomSheetModalProvider } from "@gorhom/bottom-sheet";
@@ -25,6 +27,11 @@ import { useEffect, useState } from "react";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import "react-native-reanimated";
 import { RootSiblingParent } from "react-native-root-siblings";
+import TrackPlayer from "react-native-track-player";
+import { PlaybackService } from "@/lib/services/musicServices";
+
+// Register `React-Native-Track-Player`
+TrackPlayer.registerPlaybackService(() => PlaybackService);
 
 // Database Connector
 const expoDb = openDatabaseSync(DEFAULT_DATABASE_NAME);
@@ -46,6 +53,18 @@ export default function RootLayout() {
 
   // Initiate Drizzle Studio
   useDrizzleStudio(expoDb);
+
+  // Initialize the `React-Native-Track-Player`
+  const handleTrackPlayerLoaded = React.useCallback(() => {
+    SplashScreen.hideAsync();
+  }, []);
+
+  useSetupTrackPlayer({
+    onLoad: handleTrackPlayerLoaded,
+  });
+
+  // Register the Logs for `React-Native-Track-Player`
+  useLogTrackPlayerState();
 
   // Side Effects
   useEffect(() => {
