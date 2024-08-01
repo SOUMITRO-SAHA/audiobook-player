@@ -3,20 +3,12 @@ import { StyleSheet } from "react-native";
 import ParallaxScrollView from "@/components/ParallaxScrollView";
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
-import { useLogTrackPlayerState } from "@/hooks/useLogTrackPlayerState";
-import { useSetupTrackPlayer } from "@/hooks/useSetupTrackPlayer";
 import { fetchAccount } from "@/lib/db/query";
 import { resetAccount, selectAccount } from "@/store/slice";
 import { Account } from "@/types/database";
 import { MaterialIcons } from "@expo/vector-icons";
-import { SplashScreen } from "expo-router";
 import * as React from "react";
-import TrackPlayer from "react-native-track-player";
 import { useDispatch, useSelector } from "react-redux";
-import { playbackService } from "@/musicPlayerServices";
-
-// Registering the Playback Service
-TrackPlayer.registerPlaybackService(() => playbackService);
 
 export default function HomeScreen() {
   const [account, setAccount] = React.useState<Account | null>(null);
@@ -24,19 +16,6 @@ export default function HomeScreen() {
   // Redux
   const { updated } = useSelector(selectAccount);
   const dispatch = useDispatch();
-
-  // Functions
-  const handleTrackPlayerLoaded = React.useCallback(() => {
-    SplashScreen.hideAsync();
-  }, []);
-
-  // Initialize Track Player
-  useSetupTrackPlayer({
-    onLoad: handleTrackPlayerLoaded,
-  });
-
-  // Initialize the TrackPlayer Log Hook
-  useLogTrackPlayerState();
 
   // Side Effects
   React.useEffect(() => {

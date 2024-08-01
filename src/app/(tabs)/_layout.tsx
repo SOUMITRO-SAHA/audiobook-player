@@ -1,3 +1,4 @@
+import { FloatingPlayer } from "@/components/player";
 import { Colors } from "@/constants";
 import { useColorScheme } from "@/hooks/useColorScheme";
 import { AntDesign } from "@expo/vector-icons";
@@ -72,6 +73,9 @@ export default function TabLayout() {
           }}
         />
       </Tabs>
+
+      {/* Floating Player */}
+      <FloatingPlayer />
     </SafeAreaProvider>
   );
 }

@@ -13,7 +13,7 @@ export const AddNewAlbumButton: React.FC<AddNewAlbumButtonProps> = ({
   return (
     <Pressable
       style={{ backgroundColor: Colors.dark.primary }}
-      className="absolute bottom-5 right-5 h-16 w-16 rounded-xl flex justify-center items-center"
+      className="absolute flex items-center justify-center w-16 h-16 bottom-20 right-5 rounded-xl"
       onPress={onPress}
     >
       <AntDesign name="plus" size={32} color={Colors.dark.background} />

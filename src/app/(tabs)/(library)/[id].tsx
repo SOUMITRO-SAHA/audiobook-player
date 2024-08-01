@@ -1,11 +1,10 @@
 import ParallaxScrollView from "@/components/ParallaxScrollView";
-import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
+import { TrackListItem } from "@/components/track";
 import { Colors } from "@/constants";
 import { fetchAllFilesByFolderId, fetchFolderByFolderId } from "@/lib/db/query";
-import { formatTime } from "@/lib/utils";
 import { Folder, Track } from "@/types/database";
-import { AntDesign, Entypo, FontAwesome } from "@expo/vector-icons";
+import { AntDesign } from "@expo/vector-icons";
 import { Image } from "expo-image";
 import { useLocalSearchParams, useNavigation } from "expo-router";
 import * as React from "react";
@@ -59,36 +58,7 @@ const LibraryContentScreen = () => {
         <FlatList
           data={allFiles}
           renderItem={({ item, index }) => (
-            <ThemedView
-              key={item.id}
-              className="flex flex-row items-center justify-between p-3 space-x-4 bg-slate-800 rounded-xl"
-            >
-              <ThemedView className="flex items-center justify-center w-10 h-10 p-2 rounded-full">
-                <FontAwesome
-                  name="play"
-                  size={16}
-                  color={Colors.dark.primary}
-                />
-              </ThemedView>
-
-              <ThemedView className="bg-transparent">
-                <ThemedView className="flex flex-row items-center space-x-1 bg-transparent">
-                  <ThemedText>{index + 1}.</ThemedText>
-                  <ThemedText> {item.name}</ThemedText>
-                </ThemedView>
-                <ThemedText className="mt-1 text-sm text-slate-400">
-                  {item.duration ? formatTime(Number(item.duration)) : ""}
-                </ThemedText>
-              </ThemedView>
-
-              <ThemedView className="bg-transparent">
-                <Entypo
-                  name="dots-three-vertical"
-                  size={24}
-                  color={"#dfdbdb"}
-                />
-              </ThemedView>
-            </ThemedView>
+            <TrackListItem track={item} index={index} />
           )}
           ItemSeparatorComponent={() => <ThemedView className="h-[1px] my-1" />}
         />
