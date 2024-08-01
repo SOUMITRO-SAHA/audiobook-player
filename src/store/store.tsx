@@ -3,9 +3,11 @@ import { configureStore, combineReducers } from "@reduxjs/toolkit";
 import accountReducer from "./slice/account";
 import folderReducer from "./slice/folder";
 import libraryReducer from "./slice/library";
+import appReducer from "./slice/app";
 import { Provider } from "react-redux";
 
 const RootReducer = combineReducers({
+  app: appReducer,
   account: accountReducer,
   folder: folderReducer,
   library: libraryReducer,
