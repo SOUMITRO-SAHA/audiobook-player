@@ -155,13 +155,15 @@ const AccountScreen = () => {
       {/* Permitted Folders */}
       {folders && (
         <ThemedView>
-          <ThemedText className="px-1 mb-1">Permitted Folders</ThemedText>
+          <ThemedText className="px-1 mb-2">Permitted Folders</ThemedText>
           <ThemedView className="flex flex-row items-center space-x-2">
             {folders &&
               folders.map((folder) => (
-                <ThemedText className="items-center justify-center p-2 px-3 bg-slate-400 rounded-xl">
-                  {folder?.name}
-                </ThemedText>
+                <TouchableOpacity activeOpacity={0.85} key={folder.id}>
+                  <ThemedText className="items-center justify-center w-full p-2 px-3 text-sm bg-slate-700 rounded-xl">
+                    {folder?.name}
+                  </ThemedText>
+                </TouchableOpacity>
               ))}
           </ThemedView>
         </ThemedView>
