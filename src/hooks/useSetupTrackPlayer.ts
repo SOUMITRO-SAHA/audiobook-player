@@ -3,14 +3,15 @@ import TrackPlayer, { RepeatMode } from "react-native-track-player";
 
 const setUpPlayer = async () => {
   try {
-    await TrackPlayer.setupPlayer({
-      maxCacheSize: 1024 * 10,
-    });
+    await TrackPlayer.setupPlayer();
 
     // After Initiating the player
-    await TrackPlayer.setVolume(0.25);
+    await TrackPlayer.setVolume(0.5);
     await TrackPlayer.setRepeatMode(RepeatMode.Queue);
-  } catch (error) {}
+  } catch (error) {
+    console.error(error);
+    throw error;
+  }
 };
 
 const useSetupTrackPlayer = ({ onLoad }: { onLoad?: () => void }) => {
