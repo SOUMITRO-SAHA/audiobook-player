@@ -1,5 +1,6 @@
 import { Asset } from "expo-media-library";
 import TrackPlayer, { Track } from "react-native-track-player";
+import UnknownTrack from "@/assets/images/unknown_track.png";
 
 export const generateSingleTrack = ({
   track,
@@ -14,9 +15,9 @@ export const generateSingleTrack = ({
     url: track.uri,
     title: track.filename,
     artist: "Unknown",
-    album: albumName,
+    album: albumName || track.filename,
     albumArtUri: track.uri,
-    artwork: String(coverImage),
+    artwork: String(coverImage) || UnknownTrack,
     duration: convertDurationSecondsToMilliseconds(track.duration),
     id: track.id,
   };
@@ -31,7 +32,6 @@ export const convertDurationSecondsToMilliseconds = (sec: number) => {
 export const addSingleTrack = async (track: Track) => {
   try {
     await TrackPlayer.add(track);
-    await TrackPlayer.play();
   } catch (error) {
     console.log(error);
   }
