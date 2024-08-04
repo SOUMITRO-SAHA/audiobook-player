@@ -2,12 +2,18 @@ import { AppWideSuspense } from "@/components";
 import ParallaxScrollView from "@/components/ParallaxScrollView";
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
-import { DEFAULT_DATABASE_NAME } from "@/constants";
+import { Colors, DEFAULT_DATABASE_NAME } from "@/constants";
 import { useColorScheme } from "@/hooks/useColorScheme";
 import useLogTrackPlayerState from "@/hooks/useLogTrackPlayerState";
 import useSetupTrackPlayer from "@/hooks/useSetupTrackPlayer";
 import migrations from "@/lib/db/drizzle/migrations";
-import { StoreProvider } from "@/store";
+import {
+  GetPermissionStatus,
+  RequestForStoragePermissions,
+} from "@/lib/services/media-library";
+import { PlaybackService } from "@/lib/services/musicServices";
+import { setupApplication } from "@/lib/services/setup";
+import { useTrackPlayerStore } from "@/store";
 import { BottomSheetModalProvider } from "@gorhom/bottom-sheet";
 import {
   DarkTheme,
@@ -23,15 +29,11 @@ import * as SplashScreen from "expo-splash-screen";
 import { SQLiteProvider } from "expo-sqlite";
 import { openDatabaseSync } from "expo-sqlite/next";
 import * as React from "react";
-import { useEffect, useState } from "react";
+import { ActivityIndicator } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import "react-native-reanimated";
 import { RootSiblingParent } from "react-native-root-siblings";
 import TrackPlayer from "react-native-track-player";
-import { PlaybackService } from "@/lib/services/musicServices";
-
-// Register `React-Native-Track-Player`
-TrackPlayer.registerPlaybackService(() => PlaybackService);
 
 // Database Connector
 const expoDb = openDatabaseSync(DEFAULT_DATABASE_NAME);
@@ -41,12 +43,14 @@ const db = drizzle(expoDb);
 SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
-  const [initialLoading, setInitialLoading] = useState(true);
-
   const colorScheme = useColorScheme();
   const [loaded] = useFonts({
     SpaceMono: require("@/assets/fonts/SpaceMono-Regular.ttf"),
   });
+
+  // Store
+  const { isSetup, isTrackPlayerRegistered, setRegisterTrackPlayer } =
+    useTrackPlayerStore();
 
   // Drizzle
   const { success, error } = useMigrations(db, migrations);
@@ -67,13 +71,54 @@ export default function RootLayout() {
   useLogTrackPlayerState();
 
   // Side Effects
-  useEffect(() => {
+  React.useEffect(() => {
+    (async () => {
+      // First Check for Permission Status
+      const { granted } = await GetPermissionStatus();
+
+      if (!granted) {
+        // Request for Storage Permissions
+        const permission = await RequestForStoragePermissions();
+
+        if (permission.granted) {
+          // Then Call the Setup
+          await setupApplication();
+        }
+      }
+    })();
+
+    (async () => {
+      try {
+        if (!isTrackPlayerRegistered) {
+          console.log(`I am called only ${Date.now()}`);
+          TrackPlayer.registerPlaybackService(() => PlaybackService);
+
+          // Updating the Status
+          setRegisterTrackPlayer(true);
+        }
+      } catch (error) {
+        console.log("Error registering Playback service: ", error);
+      }
+    })();
+  }, []);
+
+  React.useEffect(() => {
     if (loaded) {
       SplashScreen.hideAsync();
     }
   }, [loaded]);
 
   // Renders
+  if (!isSetup) {
+    return (
+      <ParallaxScrollView>
+        <ThemedView className="flex flex-row items-center justify-center w-full h-full">
+          <ActivityIndicator size={50} color={Colors.dark.primary} />
+        </ThemedView>
+      </ParallaxScrollView>
+    );
+  }
+
   if (error) {
     return (
       <ParallaxScrollView>
@@ -91,43 +136,37 @@ export default function RootLayout() {
     );
   }
 
-  if (!loaded && initialLoading) {
-    return null;
-  }
-
   return (
-    <StoreProvider>
-      <RootSiblingParent>
-        <GestureHandlerRootView>
-          <BottomSheetModalProvider>
-            <React.Suspense fallback={<AppWideSuspense />}>
-              <SQLiteProvider useSuspense databaseName={DEFAULT_DATABASE_NAME}>
-                <ThemeProvider
-                  value={colorScheme === "dark" ? DarkTheme : DefaultTheme}
-                >
-                  <Stack>
-                    <Stack.Screen
-                      name="(tabs)"
-                      options={{ headerShown: false }}
-                    />
-                    <Stack.Screen name="+not-found" />
-                    <Stack.Screen
-                      name="player"
-                      options={{
-                        presentation: "card",
-                        gestureEnabled: true,
-                        gestureDirection: "vertical",
-                        animationDuration: 400,
-                        headerShown: false,
-                      }}
-                    />
-                  </Stack>
-                </ThemeProvider>
-              </SQLiteProvider>
-            </React.Suspense>
-          </BottomSheetModalProvider>
-        </GestureHandlerRootView>
-      </RootSiblingParent>
-    </StoreProvider>
+    <RootSiblingParent>
+      <GestureHandlerRootView>
+        <BottomSheetModalProvider>
+          <React.Suspense fallback={<AppWideSuspense />}>
+            <SQLiteProvider useSuspense databaseName={DEFAULT_DATABASE_NAME}>
+              <ThemeProvider
+                value={colorScheme === "dark" ? DarkTheme : DefaultTheme}
+              >
+                <Stack>
+                  <Stack.Screen
+                    name="(tabs)"
+                    options={{ headerShown: false }}
+                  />
+                  <Stack.Screen name="+not-found" />
+                  <Stack.Screen
+                    name="player"
+                    options={{
+                      presentation: "card",
+                      gestureEnabled: true,
+                      gestureDirection: "vertical",
+                      animationDuration: 400,
+                      headerShown: false,
+                    }}
+                  />
+                </Stack>
+              </ThemeProvider>
+            </SQLiteProvider>
+          </React.Suspense>
+        </BottomSheetModalProvider>
+      </GestureHandlerRootView>
+    </RootSiblingParent>
   );
 }
