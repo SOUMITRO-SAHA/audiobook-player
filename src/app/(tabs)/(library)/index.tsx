@@ -1,68 +1,34 @@
-import { BottomSheet } from "@/components";
 import ParallaxScrollView from "@/components/ParallaxScrollView";
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
-import { AddNewAlbumButton, LibraryCard } from "@/components/ui";
-import { DeleteModal } from "@/components/ui/modals";
+import { LibraryCard } from "@/components/ui";
 import { Colors } from "@/constants";
-import { deleteFolderByFolderId, fetchAllFolders } from "@/lib/db/query";
-import { addNewMediaLibrary } from "@/lib/services/media-library";
+import { addNewFolderToTheApplication } from "@/lib/services/fs-worker";
+import { readDefaultDirectory } from "@/lib/services/rnfs";
 import { cn } from "@/lib/utils";
-import {
-  resetIsLoading,
-  resetLibraryLoading,
-  selectFolder,
-  selectLibrary,
-  setLibraryLoading,
-} from "@/store/slice";
-import { Folder } from "@/types/database";
-import { MaterialIcons } from "@expo/vector-icons";
-import { BottomSheetModal } from "@gorhom/bottom-sheet";
-import { useEffect, useRef, useState } from "react";
+import { useAppStore } from "@/store";
+import { Ionicons } from "@expo/vector-icons";
+import * as React from "react";
 import { ActivityIndicator, FlatList, TouchableOpacity } from "react-native";
-import { useDispatch, useSelector } from "react-redux";
+import { ReadDirItem } from "react-native-fs";
 
 export default function LibraryScreen() {
-  const [refreshCount, setRefreshCount] = useState<number>(0);
-  const [refreshing, setRefreshing] = useState<boolean>(false);
-  const [folders, setFolders] = useState<Folder[] | null>(null);
-  const [selectedBottomSheetItem, setSelectedBottomSheetItem] = useState<
-    number | null
+  const [refreshCount, setRefreshCount] = React.useState<number>(0);
+  const [refreshing, setRefreshing] = React.useState<boolean>(false);
+  const [folders, setFolders] = React.useState<ReadDirItem[] | null>(null);
+  const [selectedBottomSheetItem, setSelectedBottomSheetItem] = React.useState<
+    string | null
   >(null);
-  const [shouldRenderDeleteModal, setShouldRenderDeleteModal] = useState(false);
 
-  // ref
-  const bottomSheetModalRef = useRef<BottomSheetModal>(null);
-
-  // Redux
-  const { loading } = useSelector(selectFolder);
-  const { libraryLoading } = useSelector(selectLibrary);
-  const dispatch = useDispatch();
-
-  // Function
-  const handleAddNewAlbum = async () => {
-    dispatch(setLibraryLoading());
-    try {
-      // await addNewFolder();
-      await addNewMediaLibrary();
-    } catch (error) {
-      dispatch(resetLibraryLoading());
-    } finally {
-      dispatch(resetLibraryLoading());
-    }
-  };
+  // Store
+  const { isLibraryLoading, setLibraryLoading, resetLibraryLoading } =
+    useAppStore();
 
   const handleRefresh = async () => {
-    setRefreshing(true);
-    dispatch(resetIsLoading());
     try {
-      // const res = await addSubfolderUnderMainFolder();
-      // if (res) {
-      //   dispatch(setIsLoading());
-      // }
+      await addNewFolderToTheApplication();
     } catch (error) {
-    } finally {
-      setRefreshing(false);
+      console.error(`Library Content Reloading ===>`, error);
     }
 
     // Update `refreshCount`
@@ -73,42 +39,25 @@ export default function LibraryScreen() {
     }
   };
 
-  const handleThreeDotPress = (value: number) => {
-    bottomSheetModalRef.current?.present();
-    setSelectedBottomSheetItem(value);
-  };
-
-  const handleDeleteFolder = async () => {
-    try {
-      dispatch(setLibraryLoading());
-
-      if (selectedBottomSheetItem) {
-        const res = await deleteFolderByFolderId(selectedBottomSheetItem);
-        if (res) {
-          setShouldRenderDeleteModal(false);
-          dispatch(resetLibraryLoading());
-        }
-      }
-    } catch (error) {
-      console.error(error);
-    } finally {
-      bottomSheetModalRef.current?.dismiss();
-      setSelectedBottomSheetItem(null);
-      dispatch(resetLibraryLoading());
-    }
-  };
+  const handleThreeDotPress = (name: string) => {};
 
   // Side Effect
-  useEffect(() => {
-    const getFolders = async () => {
-      const res = await fetchAllFolders();
-      if (res) {
-        setFolders(res);
-      }
-    };
+  React.useEffect(() => {
+    (async () => {
+      setLibraryLoading();
+      try {
+        const defaultDirectory = await readDefaultDirectory();
 
-    getFolders();
-  }, [libraryLoading]);
+        if (defaultDirectory) {
+          setFolders(defaultDirectory);
+        }
+      } catch (error) {
+        console.error("Error reading default directory:", error);
+      } finally {
+        resetLibraryLoading();
+      }
+    })();
+  }, []);
 
   // Render Components
   const renderLoadingCard = () => {
@@ -176,48 +125,29 @@ export default function LibraryScreen() {
 
   return (
     <ParallaxScrollView>
-      <ThemedView className={cn("flex-row")}>
+      <ThemedView className={cn("flex-row justify-between items-center")}>
         <ThemedText type="title">Library</ThemedText>
+
+        <TouchableOpacity onPress={handleRefresh}>
+          <ThemedView
+            className="w-10 h-10 p-2 rounded-lg"
+            style={{
+              backgroundColor: Colors.dark.muted,
+            }}
+          >
+            <Ionicons
+              name="reload-outline"
+              size={24}
+              color={Colors.dark.foreground}
+            />
+          </ThemedView>
+        </TouchableOpacity>
       </ThemedView>
 
       <ThemedView>{renderLibraryCards()}</ThemedView>
 
       {/* For Loading New Card */}
-      <ThemedView>{libraryLoading && renderLoadingCard()}</ThemedView>
-
-      {/* Add button */}
-      <AddNewAlbumButton onPress={handleAddNewAlbum} />
-
-      {/* Confirm Delete Modal */}
-      <DeleteModal
-        isOpen={shouldRenderDeleteModal}
-        setIsOpen={setShouldRenderDeleteModal}
-        handleDeleteFun={handleDeleteFolder}
-      />
-
-      {/* Bottom Sheet Modal */}
-      <BottomSheet ref={bottomSheetModalRef}>
-        {/* Delete */}
-        <TouchableOpacity
-          onPress={() => {
-            if (selectedBottomSheetItem) {
-              setShouldRenderDeleteModal((prev) => !prev);
-            }
-          }}
-        >
-          <ThemedView
-            className="flex-row items-center p-2 px-5 space-x-2 rounded-xl"
-            style={{ backgroundColor: Colors.dark.card }}
-          >
-            <MaterialIcons
-              name="delete-sweep"
-              size={32}
-              color={Colors.light.destructive}
-            />
-            <ThemedText className="text-lg">Delete this Folder</ThemedText>
-          </ThemedView>
-        </TouchableOpacity>
-      </BottomSheet>
+      <ThemedView>{isLibraryLoading && renderLoadingCard()}</ThemedView>
     </ParallaxScrollView>
   );
 }
