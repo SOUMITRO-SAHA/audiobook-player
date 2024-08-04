@@ -6,6 +6,12 @@ type PlaylistStoreProps = {
   coverImage: string;
   track: Asset | null;
   tracks: Asset[];
+  setPlaylistName: (name: string) => void;
+  resetPlaylistName: () => void;
+  setCoverImage: (image: string) => void;
+  resetCoverImage: () => void;
+  addTrack: (track: Asset) => void;
+  resetTrack: () => void;
 };
 
 export const usePlaylistStore = create<PlaylistStoreProps>((set) => ({
