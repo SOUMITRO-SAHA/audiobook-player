@@ -2,7 +2,6 @@ import { getRandomGradient } from "@/components/gradients";
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
 import { Colors } from "@/constants";
-import { Folder } from "@/types/database";
 import { Entypo } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import { router } from "expo-router";
