@@ -62,3 +62,19 @@ export const addNewMediaLibrary = async () => {
     }
   }
 };
+
+export const RequestForStoragePermissions = async () => {
+  const permission = await MediaLibrary.requestPermissionsAsync(false, [
+    "audio",
+    "photo",
+  ]);
+  return permission;
+};
+
+export const GetPermissionStatus = async () => {
+  const permission = await MediaLibrary.getPermissionsAsync(false, [
+    "audio",
+    "photo",
+  ]);
+  return permission;
+};
