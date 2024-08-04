@@ -127,3 +127,19 @@ export const getFolderContentByFolderName = async (folderName: string) => {
     console.error(error);
   }
 };
+
+export const getAllFilesFromTheDefaultFolders = async (): Promise<
+  MediaLibrary.Asset[] | undefined
+> => {
+  try {
+    const files = await MediaLibrary.getAssetsAsync({
+      mediaType: "audio",
+      sortBy: "creationTime",
+      album: "-730319634", // TODO: Update this to the Database you have to store the
+    });
+
+    return files.assets;
+  } catch (error) {
+    console.error(error);
+  }
+};
