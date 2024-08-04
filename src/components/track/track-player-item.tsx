@@ -15,7 +15,7 @@ export const TrackListItem = ({
   index,
 }: {
   track: Asset;
-  index: number;
+  index?: number;
 }) => {
   const isActiveTrack = useActiveTrack()?.url === track.uri;
 
@@ -37,10 +37,8 @@ export const TrackListItem = ({
     // then Add to the Track Player and also play
     await addSingleTrack(track);
 
-    // Last navigate to the player screen
-    router.navigate({
-      pathname: "player",
-    });
+    // Now Navigate to the Player
+    router.navigate("/player");
   };
 
   return (
@@ -59,7 +57,7 @@ export const TrackListItem = ({
 
         <ThemedView className="bg-transparent">
           <ThemedView className="flex flex-row items-center space-x-1 bg-transparent">
-            <ThemedText>{index + 1}.</ThemedText>
+            {index && <ThemedText>{index + 1}.</ThemedText>}
             <ThemedText> {track.filename}</ThemedText>
           </ThemedView>
           <ThemedText className="mt-1 text-sm text-slate-400">
