@@ -5,6 +5,7 @@ import { ThemedView } from "@/components/ThemedView";
 import { TrackList } from "@/components/track";
 import { Colors } from "@/constants";
 import { getFolderContentByFolderName } from "@/lib/services/fs-worker";
+import { usePlaylistStore } from "@/store";
 import { AntDesign } from "@expo/vector-icons";
 import { Image } from "expo-image";
 import { Asset } from "expo-media-library";
@@ -21,6 +22,9 @@ const LibraryContentScreen = () => {
   const [initialLoading, setInitialLoading] = React.useState<boolean>(true);
   const [allFiles, setAllFiles] = React.useState<Asset[] | null>(null);
   const [coverImages, setCoverImages] = React.useState<Asset[] | null>(null);
+
+  // Store
+  const { setCoverImage, setPlaylistName } = usePlaylistStore();
 
   // Router
   const router = useRouter();
@@ -39,6 +43,10 @@ const LibraryContentScreen = () => {
         // Setting the CoverImages
         if (tracks && tracks.images) {
           setCoverImages(tracks.images);
+
+          // Setting the First Image as Cover Image
+          const firstImage = tracks.images[0];
+          setCoverImage(firstImage.uri);
         }
       } catch (error) {
         console.error(error);
@@ -52,6 +60,11 @@ const LibraryContentScreen = () => {
   React.useEffect(() => {
     if (name) {
       navigation.setOptions({ title: name });
+    }
+
+    // Setting the Playlist Name
+    if (name && typeof name === "string") {
+      setPlaylistName(name);
     }
   }, [name, navigation]);
 
