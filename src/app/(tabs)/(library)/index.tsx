@@ -1,13 +1,18 @@
 import ParallaxScrollView from "@/components/ParallaxScrollView";
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
+import { TrackListItem } from "@/components/track";
 import { LibraryCard } from "@/components/ui";
 import { Colors } from "@/constants";
-import { addNewFolderToTheApplication } from "@/lib/services/fs-worker";
+import {
+  addNewFolderToTheApplication,
+  getAllFilesFromTheDefaultFolders,
+} from "@/lib/services/fs-worker";
 import { readDefaultDirectory } from "@/lib/services/rnfs";
 import { cn } from "@/lib/utils";
-import { useAppStore } from "@/store";
+import { useAppStore, usePlaylistStore } from "@/store";
 import { Ionicons } from "@expo/vector-icons";
+import { Asset, Asset as AssetType } from "expo-media-library";
 import * as React from "react";
 import { ActivityIndicator, FlatList, TouchableOpacity } from "react-native";
 import { ReadDirItem } from "react-native-fs";
@@ -15,14 +20,15 @@ import { ReadDirItem } from "react-native-fs";
 export default function LibraryScreen() {
   const [refreshCount, setRefreshCount] = React.useState<number>(0);
   const [refreshing, setRefreshing] = React.useState<boolean>(false);
+
+  const [files, setFiles] = React.useState<AssetType[] | null>(null);
   const [folders, setFolders] = React.useState<ReadDirItem[] | null>(null);
-  const [selectedBottomSheetItem, setSelectedBottomSheetItem] = React.useState<
-    string | null
-  >(null);
 
   // Store
   const { isLibraryLoading, setLibraryLoading, resetLibraryLoading } =
     useAppStore();
+
+  const { resetPlaylistName, resetCoverImage } = usePlaylistStore();
 
   const handleRefresh = async () => {
     try {
@@ -46,11 +52,29 @@ export default function LibraryScreen() {
     (async () => {
       setLibraryLoading();
       try {
+        const directories: ReadDirItem[] = [];
         const defaultDirectory = await readDefaultDirectory();
 
         if (defaultDirectory) {
-          setFolders(defaultDirectory);
+          defaultDirectory.forEach(async (d) => {
+            if (d.isDirectory()) {
+              directories.push(d);
+            }
+          });
+
+          setFolders(directories);
+
+          // And Adding all the files of Default Folder in the tracks
+          const tracks = await getAllFilesFromTheDefaultFolders();
+
+          if (tracks && tracks.length > 0) {
+            setFiles(tracks);
+          }
         }
+
+        // Also Updating the Store
+        resetPlaylistName();
+        resetCoverImage();
       } catch (error) {
         console.error("Error reading default directory:", error);
       } finally {
@@ -75,11 +99,25 @@ export default function LibraryScreen() {
     return (
       <ThemedView>
         <FlatList
-          data={folders}
+          data={
+            folders && files
+              ? [
+                  ...folders.map((folder) => ({ ...folder, type: "folder" })),
+                  ...files.map((file) => ({ ...file, type: "file" })),
+                ]
+              : []
+          }
           renderItem={({ item }) => {
-            return (
-              <LibraryCard {...item} onPressThreeDots={handleThreeDotPress} />
-            );
+            if (item.type === "folder") {
+              return (
+                <LibraryCard
+                  {...(item as ReadDirItem)}
+                  onPressThreeDots={handleThreeDotPress}
+                />
+              );
+            } else {
+              return <TrackListItem track={item as Asset} />;
+            }
           }}
           ItemSeparatorComponent={() => {
             return <ThemedView style={{ height: 5 }} />;
