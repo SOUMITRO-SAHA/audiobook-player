@@ -13,22 +13,19 @@ export const FloatingPlayer = () => {
   const activeTrack = useActiveTrack();
   const lastActiveTrack = useLastActiveTrack();
 
-  const displayTrack = activeTrack ?? lastActiveTrack;
+  const displayTrack = React.useMemo(
+    () => activeTrack ?? lastActiveTrack,
+    [activeTrack, lastActiveTrack]
+  );
+
   if (!displayTrack) return null;
-
-  // Router
-  const router = useRouter();
-
-  const handlePress = () => {
-    router.navigate("/player");
-  };
 
   return (
     <View
       className="absolute p-2 px-5 bottom-14 rounded-xl"
       style={styles.container}
     >
-      <TouchableOpacity onPress={handlePress} activeOpacity={0.9}>
+      <TouchableOpacity activeOpacity={0.9}>
         {/* <Image source={activeTrack.artwork} style={styles.trackArtWorkImage} /> */}
         <View className="flex flex-row items-center space-x-2 max-w-[80%]">
           <ThemedView className="flex items-center justify-center w-12 h-12 p-1 rounded">
