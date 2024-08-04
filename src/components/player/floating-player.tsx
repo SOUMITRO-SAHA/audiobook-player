@@ -14,18 +14,13 @@ export const FloatingPlayer = () => {
   const lastActiveTrack = useLastActiveTrack();
 
   const displayTrack = activeTrack ?? lastActiveTrack;
-  console.log("Count", Date.now());
   if (!displayTrack) return null;
 
   // Router
-  // const router = useRouter();
-
-  const handlePressThreeDots = () => {
-    // setIsActive(!isActive);
-  };
+  const router = useRouter();
 
   const handlePress = () => {
-    // router.navigate("/player");
+    router.navigate("/player");
   };
 
   return (

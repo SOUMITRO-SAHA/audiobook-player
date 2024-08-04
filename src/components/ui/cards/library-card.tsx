@@ -8,24 +8,24 @@ import { LinearGradient } from "expo-linear-gradient";
 import { router } from "expo-router";
 import React, { useMemo } from "react";
 import { Pressable, StyleSheet, TouchableOpacity } from "react-native";
+import { ReadDirItem } from "react-native-fs";
 
-interface LibraryProps extends Folder {
-  onPressThreeDots: (value: number) => void;
+interface LibraryProps extends ReadDirItem {
+  onPressThreeDots: (name: string) => void;
 }
 
 export const LibraryCard: React.FC<LibraryProps> = (props) => {
   // Memoization
   const color = useMemo(() => getRandomGradient(), []);
 
-  // <Link href={`/contents/${props.id}`}>
   return (
     <TouchableOpacity
       style={styles.container}
       className="flex flex-row items-center justify-between w-full p-2 px-3 space-x-3 bg-red-500 rounded-lg shadow-xl"
       onPress={() => {
         router.push({
-          pathname: `[id]`,
-          params: { id: props.id },
+          pathname: `[param]`,
+          params: { name: props.name },
         });
       }}
     >
@@ -37,7 +37,7 @@ export const LibraryCard: React.FC<LibraryProps> = (props) => {
       <Pressable
         className="W-[10%]"
         onPress={() => {
-          props.onPressThreeDots(props.id);
+          props.onPressThreeDots(props.name);
         }}
       >
         <ThemedView className="bg-transparent">
