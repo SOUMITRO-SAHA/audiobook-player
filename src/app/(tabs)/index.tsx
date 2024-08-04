@@ -3,55 +3,34 @@ import { StyleSheet } from "react-native";
 import ParallaxScrollView from "@/components/ParallaxScrollView";
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
+import { Colors } from "@/constants";
 import { fetchAccount } from "@/lib/db/query";
-import {
-  resetAccount,
-  resetIsLoading,
-  selectAccount,
-  selectApp,
-  setAppLoading,
-} from "@/store/slice";
+import { useAppStore } from "@/store";
 import { Account } from "@/types/database";
 import { Ionicons, MaterialIcons } from "@expo/vector-icons";
 import * as React from "react";
-import { useDispatch, useSelector } from "react-redux";
-import { Colors } from "@/constants";
 import { TouchableOpacity } from "react-native-gesture-handler";
 
 export default function HomeScreen() {
   const [account, setAccount] = React.useState<Account | null>(null);
 
-  // Redux Store
-  const { updated } = useSelector(selectAccount);
-  const { isLoading } = useSelector(selectApp);
-
-  // Dispatch
-  const dispatch = useDispatch();
-
-  // Fetching Account
-  const getAccount = async () => {
-    const res = await fetchAccount();
-    if (res) {
-      setAccount(res);
-
-      // Dispatch Account
-      dispatch(resetAccount());
-    }
-  };
+  // Store
+  const { isLoading, reLoadApplication } = useAppStore();
 
   // Side Effects
   React.useEffect(() => {
-    const timestamp = setTimeout(() => {
-      // Calling Account Update
-      getAccount();
-
-      // Updating the App loading
-      if (isLoading) {
-        dispatch(resetIsLoading());
+    // Fetching Account
+    const getAccount = async () => {
+      const res = await fetchAccount();
+      if (res) {
+        setAccount(res);
       }
-    }, 100);
+    };
+
+    // Calling Account Update
+    const timestamp = setTimeout(getAccount, 100);
     return () => clearTimeout(timestamp);
-  }, [updated, isLoading]);
+  }, [isLoading]);
 
   return (
     <ParallaxScrollView className="relative">
@@ -62,7 +41,7 @@ export default function HomeScreen() {
 
         <TouchableOpacity
           onPress={() => {
-            dispatch(setAppLoading());
+            reLoadApplication();
           }}
         >
           <ThemedView
