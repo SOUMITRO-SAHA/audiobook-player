@@ -8,6 +8,12 @@ import * as React from "react";
 import { ActivityIndicator, StyleSheet, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useActiveTrack } from "react-native-track-player";
+import UnknownTrack from "@/assets/images/unknown_track.png";
+import { ThemedText } from "@/components/ThemedText";
+import { Feather } from "@expo/vector-icons";
+import PlayerProgressBar from "@/components/player/player-progress-bar";
+import PlayerAdvanceController from "@/components/player/player-advance-controller";
+import PlayerFeatures from "@/components/player/player-features";
 
 const AudioPlayer = () => {
   const { top, bottom } = useSafeAreaInsets();
@@ -41,21 +47,35 @@ const AudioPlayer = () => {
         >
           <Image
             style={styles.coverImage}
-            source={
-              activeTrack.artwork ?? "https://picsum.photos/seed/696/3000/2000"
-            }
+            source={UnknownTrack}
             placeholder={{ blurhash }}
             contentFit="cover"
             transition={1000}
           />
+          <ThemedText className="mt-3 text-center text-gray-400">
+            {activeTrack.album}
+          </ThemedText>
 
           {/* Track Title */}
-          <View style={styles.trackTitleContainer}>
+          <View
+            style={styles.trackTitleContainer}
+            className="mx-auto space-x-5"
+          >
+            <Feather name="list" size={24} color={Colors.dark.foreground} />
             <MovingText
-              text={activeTrack?.title ?? "Demo Text for now"}
+              text={activeTrack.title ?? ""}
               animationThreshold={30}
             />
           </View>
+
+          {/* Player Progress Bar */}
+          <PlayerProgressBar />
+
+          {/* Player Controller */}
+          <PlayerAdvanceController />
+
+          {/* Player Features */}
+          <PlayerFeatures />
         </ThemedView>
       )}
     </View>
@@ -101,15 +121,18 @@ const styles = StyleSheet.create({
   coverImage: {
     flex: 1,
     borderRadius: 12,
-    maxHeight: 256,
+    maxHeight: "50%",
+    width: "90%",
+    marginHorizontal: "auto",
     overflow: "hidden",
     backgroundColor: Colors.dark.muted,
   },
 
   trackTitleContainer: {
+    flexDirection: "row",
+    alignItems: "center",
     marginTop: 20,
     marginBottom: 10,
-    alignItems: "center",
   },
 });
 
