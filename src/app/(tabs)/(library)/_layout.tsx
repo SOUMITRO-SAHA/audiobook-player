@@ -13,7 +13,7 @@ const LibraryScreenLayout = () => {
         }}
       />
       <Stack.Screen
-        name="[id]"
+        name="[param]"
         options={{
           headerShown: false,
         }}
