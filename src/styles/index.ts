@@ -1,10 +1,10 @@
-import { colors, fontSize } from "@/constants";
+import { Colors, colors, fontSize } from "@/constants";
 import { StyleSheet } from "react-native";
 
 export const defaultStyles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.background,
+    backgroundColor: Colors.dark.background,
   },
   text: {
     fontSize: fontSize.base,
