@@ -50,3 +50,7 @@ export function formatTime(seconds: number): string {
     return `${pad(minutes)}:${pad(remainingSeconds)}`;
   }
 }
+
+export function sleep(ms: number) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
