@@ -1,19 +1,18 @@
 import ParallaxScrollView from "@/components/ParallaxScrollView";
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
-import { Button, InputBox, SelectDropdown } from "@/components/ui";
+import { InputBox, SelectDropdown } from "@/components/ui";
 import { Colors } from "@/constants";
 import { db } from "@/lib/db";
 import { fetchAccount, fetchAllFolders } from "@/lib/db/query";
 import { account } from "@/lib/db/schema";
 import { seedDefaultAccount } from "@/lib/db/seed";
-import { updateAccount } from "@/store/slice";
+import { useAppStore } from "@/store";
 import { Account, Folder } from "@/types/database";
 import { eq } from "drizzle-orm";
 import React, { useEffect, useState } from "react";
 import { Appearance, ToastAndroid, useColorScheme } from "react-native";
 import { TouchableOpacity } from "react-native-gesture-handler";
-import { useDispatch } from "react-redux";
 
 const initialFormData = {
   username: "",
@@ -26,8 +25,8 @@ const AccountScreen = () => {
   const [folders, setFolders] = useState<Folder[] | null>(null);
   const [theme, setTheme] = useState("dark");
 
-  // Redux
-  const dispatch = useDispatch();
+  // Store
+  const { reLoadAccount } = useAppStore();
 
   // Theme
   const scheme = useColorScheme();
@@ -48,8 +47,8 @@ const AccountScreen = () => {
         if (response) {
           ToastAndroid.show("Account Updated!!!", ToastAndroid.SHORT);
 
-          // Dispatching
-          dispatch(updateAccount());
+          // Reloading
+          reLoadAccount();
         }
       } else {
         // Insert
@@ -60,8 +59,8 @@ const AccountScreen = () => {
         if (response) {
           ToastAndroid.show("Account Created!!!", ToastAndroid.LONG);
 
-          // Dispatching
-          dispatch(updateAccount());
+          // Reloading
+          reLoadAccount();
         }
       }
     } catch (error) {
