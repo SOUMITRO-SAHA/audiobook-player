@@ -1,34 +1,85 @@
+import { useTrackPlayerStore } from "@/store";
 import * as React from "react";
-import TrackPlayer, { RepeatMode } from "react-native-track-player";
+import TrackPlayer, {
+  AppKilledPlaybackBehavior,
+  Capability,
+} from "react-native-track-player";
 
-const setUpPlayer = async () => {
-  try {
-    await TrackPlayer.setupPlayer();
+const InitializePlaybackService = async () => {
+  // Initializing the player
+  await TrackPlayer.setupPlayer();
 
-    // After Initiating the player
-    await TrackPlayer.setVolume(0.5);
-    await TrackPlayer.setRepeatMode(RepeatMode.Queue);
-  } catch (error) {
-    console.error(error);
-    throw error;
-  }
+  // After Initiating the player
+  await TrackPlayer.updateOptions({
+    android: {
+      appKilledPlaybackBehavior:
+        AppKilledPlaybackBehavior.StopPlaybackAndRemoveNotification,
+    },
+    capabilities: [
+      Capability.Play,
+      Capability.Pause,
+      Capability.Stop,
+      Capability.SeekTo,
+      Capability.SkipToNext,
+      Capability.SkipToPrevious,
+    ],
+    compactCapabilities: [
+      Capability.Play,
+      Capability.Pause,
+      Capability.SkipToNext,
+    ],
+    progressUpdateEventInterval: 2,
+  });
 };
 
 const useSetupTrackPlayer = ({ onLoad }: { onLoad?: () => void }) => {
+  const { isSetup, setIsSetup } = useTrackPlayerStore();
+
+  // Function
+  const setUpPlayer = async () => {
+    let attempts = 0;
+    const maxAttempt = 10;
+    while (!isSetup && attempts < maxAttempt) {
+      try {
+        const status = await TrackPlayer.getPlaybackState();
+
+        if (status.state === "error") {
+          // Initializing the playback service
+          await InitializePlaybackService();
+        } else {
+          setIsSetup(true);
+          break;
+        }
+      } catch (error) {
+        attempts++;
+
+        // Initializing the playback service
+        await InitializePlaybackService();
+
+        console.info("Failed to setup TrackPlayer, retrying...", attempts);
+
+        await new Promise((resolve) => setTimeout(resolve, 1000));
+      }
+    }
+
+    return isSetup;
+  };
+
   // Managing a variable
   const isInitialized = React.useRef(false);
 
   React.useEffect(() => {
-    setUpPlayer()
-      .then(() => {
+    (async () => {
+      let isSetup = await setUpPlayer();
+      onLoad?.();
+
+      if (isSetup) {
         isInitialized.current = true;
-        onLoad?.();
-      })
-      .catch((error) => {
-        console.log(error);
-        isInitialized.current = false;
-      });
+      }
+    })();
   }, [onLoad]);
+
+  return isInitialized;
 };
 
 export default useSetupTrackPlayer;
