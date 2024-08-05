@@ -13,6 +13,7 @@ export const defaultStyles = StyleSheet.create({
 });
 
 export const utilsStyles = StyleSheet.create({
+  container: {},
   centeredRow: {
     flexDirection: "row",
     justifyContent: "center",
