@@ -21,9 +21,11 @@ const AudioPlayer = () => {
   // HOOKS
   const { top, bottom } = useSafeAreaInsets();
   const activeTrack = useActiveTrack();
-  const { imageColors } = usePlayerBackground(
-    activeTrack?.artwork ?? UnknownTrack
-  );
+  // const { imageColors } = usePlayerBackground(
+  //   activeTrack?.artwork ?? UnknownTrack
+  // );
+
+  console.log("Active track: ", activeTrack);
 
   if (!activeTrack) {
     return (
@@ -38,11 +40,7 @@ const AudioPlayer = () => {
   return (
     <LinearGradient
       style={{ flex: 1 }}
-      colors={
-        imageColors
-          ? [imageColors.darkVibrant, imageColors.lightVibrant]
-          : [colors.background]
-      }
+      colors={[Colors.dark.primary, Colors.dark.destructive]}
     >
       <View style={styles.overlayContainer}>
         <DismissPlayerSymbol />
