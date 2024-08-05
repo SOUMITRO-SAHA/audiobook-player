@@ -138,7 +138,7 @@ export default function RootLayout() {
 
   return (
     <RootSiblingParent>
-      <GestureHandlerRootView>
+      <GestureHandlerRootView style={{ flex: 1 }}>
         <BottomSheetModalProvider>
           <React.Suspense fallback={<AppWideSuspense />}>
             <SQLiteProvider useSuspense databaseName={DEFAULT_DATABASE_NAME}>
@@ -151,6 +151,7 @@ export default function RootLayout() {
                     options={{ headerShown: false }}
                   />
                   <Stack.Screen name="+not-found" />
+
                   <Stack.Screen
                     name="player"
                     options={{
