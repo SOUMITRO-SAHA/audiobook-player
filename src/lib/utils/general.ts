@@ -54,3 +54,17 @@ export function formatTime(seconds: number): string {
 export function sleep(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
+
+export const formateDurationInText = (seconds: number) => {
+  const hours = Math.floor(seconds / 3600);
+  const minutes = Math.floor((seconds % 3600) / 60);
+  const remainingSeconds = Math.round(seconds % 60);
+
+  const pad = (num: number): string => (num < 10 ? "0" + num : num.toString());
+
+  if (hours > 0) {
+    return `${pad(hours)}h ${pad(minutes)}m ${pad(remainingSeconds)}s`;
+  } else {
+    return `${pad(minutes)}m ${pad(remainingSeconds)}s`;
+  }
+};
