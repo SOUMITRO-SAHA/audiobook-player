@@ -1,27 +1,29 @@
-import ParallaxScrollView from "@/components/ParallaxScrollView";
-import { MovingText } from "@/components/player";
+import UnknownTrack from "@/assets/images/unknown_track.png";
+import { MovingText, PlayerControls } from "@/components/player";
+import PlayerFeatures from "@/components/player/player-features";
+import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
-import { Colors, screenPadding } from "@/constants";
+import { colors, Colors, screenPadding } from "@/constants";
+import { usePlayerBackground } from "@/hooks/usePlayerBackground";
 import { defaultStyles } from "@/styles";
+import { Feather } from "@expo/vector-icons";
 import { Image } from "expo-image";
+import { LinearGradient } from "expo-linear-gradient";
 import * as React from "react";
 import { ActivityIndicator, StyleSheet, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useActiveTrack } from "react-native-track-player";
-import UnknownTrack from "@/assets/images/unknown_track.png";
-import { ThemedText } from "@/components/ThemedText";
-import { Feather } from "@expo/vector-icons";
-import PlayerProgressBar from "@/components/player/player-progress-bar";
-import PlayerAdvanceController from "@/components/player/player-advance-controller";
-import PlayerFeatures from "@/components/player/player-features";
+
+const blurhash =
+  "|rF?hV%2WCj[ayj[a|j[az_NaeWBj@ayfRayfQfQM{M|azj[azf6fQfQfQIpWXofj[ayj[j[fQayWCoeoeaya}j[ayfQa{oLj?j[WVj[ayayj[fQoff7azayj[ayj[j[ayofayayayj[fQj[ayayj[ayfjj[j[ayjuayj[";
 
 const AudioPlayer = () => {
+  // HOOKS
   const { top, bottom } = useSafeAreaInsets();
-
   const activeTrack = useActiveTrack();
-
-  const blurhash =
-    "|rF?hV%2WCj[ayj[a|j[az_NaeWBj@ayfRayfQfQM{M|azj[azf6fQfQfQIpWXofj[ayj[j[fQayWCoeoeaya}j[ayfQa{oLj?j[WVj[ayayj[fQoff7azayj[ayj[j[ayofayayayj[fQj[ayayj[ayfjj[j[ayjuayj[";
+  const { imageColors } = usePlayerBackground(
+    activeTrack?.artwork ?? UnknownTrack
+  );
 
   if (!activeTrack) {
     return (
@@ -34,51 +36,58 @@ const AudioPlayer = () => {
   }
 
   return (
-    <View style={styles.overlayContainer}>
-      <DismissPlayerSymbol />
-      {activeTrack && (
-        <ThemedView
-          style={{
-            flex: 1,
-            marginTop: top,
-            marginBottom: bottom,
-            backgroundColor: "transparent",
-          }}
-        >
-          <Image
-            style={styles.coverImage}
-            source={UnknownTrack}
-            placeholder={{ blurhash }}
-            contentFit="cover"
-            transition={1000}
-          />
-          <ThemedText className="mt-3 text-center text-gray-400">
-            {activeTrack.album}
-          </ThemedText>
-
-          {/* Track Title */}
-          <View
-            style={styles.trackTitleContainer}
-            className="mx-auto space-x-5"
+    <LinearGradient
+      style={{ flex: 1 }}
+      colors={
+        imageColors
+          ? [imageColors.darkVibrant, imageColors.lightVibrant]
+          : [colors.background]
+      }
+    >
+      <View style={styles.overlayContainer}>
+        <DismissPlayerSymbol />
+        {activeTrack && (
+          <ThemedView
+            className="relative"
+            style={{
+              flex: 1,
+              marginTop: top,
+              marginBottom: bottom,
+              backgroundColor: "transparent",
+            }}
           >
-            <Feather name="list" size={24} color={Colors.dark.foreground} />
-            <MovingText
-              text={activeTrack.title ?? ""}
-              animationThreshold={30}
+            <Image
+              style={styles.coverImage}
+              source={UnknownTrack}
+              placeholder={{ blurhash }}
+              contentFit="cover"
+              transition={1000}
             />
-          </View>
+            <ThemedText className="mt-3 text-center text-gray-400">
+              {activeTrack.album}
+            </ThemedText>
 
-          {/* Player Progress Bar */}
-          <PlayerProgressBar />
+            {/* Track Title */}
+            <View
+              style={styles.trackTitleContainer}
+              className="mx-auto space-x-5"
+            >
+              <Feather name="list" size={24} color={Colors.dark.foreground} />
+              <MovingText
+                text={activeTrack.title ?? ""}
+                animationThreshold={30}
+              />
+            </View>
 
-          {/* Player Controller */}
-          <PlayerAdvanceController />
+            {/* Player Controls */}
+            <PlayerControls />
 
-          {/* Player Features */}
-          <PlayerFeatures />
-        </ThemedView>
-      )}
-    </View>
+            {/* Player Features */}
+            <PlayerFeatures />
+          </ThemedView>
+        )}
+      </View>
+    </LinearGradient>
   );
 };
 
