@@ -53,11 +53,8 @@ const useSetupTrackPlayer = ({ onLoad }: { onLoad?: () => void }) => {
       } catch (error) {
         attempts++;
 
-        // Initializing the playback service
         await InitializePlaybackService();
-
         console.info("Failed to setup TrackPlayer, retrying...", attempts);
-
         await new Promise((resolve) => setTimeout(resolve, 1000));
       }
     }
