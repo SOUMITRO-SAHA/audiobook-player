@@ -11,7 +11,7 @@ interface BottomSheetProps {
 export const BottomSheet = forwardRef<BottomSheetModal, BottomSheetProps>(
   ({ children }, ref) => {
     // Memoize snapPoints for better performance
-    const snapPoints = useMemo(() => ["15%", "20%"], []);
+    const snapPoints = useMemo(() => ["30%", "50%"], []);
 
     const blurBackdropComponent = () => {
       return (
