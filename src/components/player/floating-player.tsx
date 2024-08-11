@@ -5,17 +5,13 @@ import { StyleSheet, TouchableOpacity, View } from "react-native";
 import { ThemedView } from "../ThemedView";
 import { MovingText } from "./moving-text";
 import { PlayPauseButton, SkipToNextButton } from "./player-control";
+import { useMusicPlayer } from "@/hooks/useMusicPlayer";
 
 export const FloatingPlayer = () => {
-  const activeTrack = null;
+  const { currentTrack, isPlaying } = useMusicPlayer();
   const lastActiveTrack = null; // useLastActiveTrack();
 
-  const displayTrack = React.useMemo(
-    () => activeTrack ?? lastActiveTrack,
-    [activeTrack, lastActiveTrack]
-  );
-
-  if (!displayTrack) return null;
+  if (!isPlaying && !currentTrack) return null;
 
   return (
     <View
@@ -34,7 +30,7 @@ export const FloatingPlayer = () => {
           </ThemedView>
           <View className="w-[98%] overflow-hidden">
             <MovingText
-              text={"" /*TODO: String(displayTrack.title)*/}
+              text={String(currentTrack?.title)}
               animationThreshold={25}
               style={{
                 overflow: "hidden",
