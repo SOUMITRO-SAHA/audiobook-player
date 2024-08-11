@@ -34,7 +34,7 @@ export const MovingText = ({
       1000,
       withRepeat(
         withTiming(-textWidth, {
-          duration: 5000,
+          duration: 1000 * 30,
           easing: Easing.linear,
         }),
         -1,
