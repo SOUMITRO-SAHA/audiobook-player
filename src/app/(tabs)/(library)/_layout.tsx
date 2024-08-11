@@ -1,5 +1,4 @@
-import ParallaxScrollView from "@/components/ParallaxScrollView";
-import { ThemedText } from "@/components/ThemedText";
+import { Colors } from "@/constants";
 import { Stack } from "expo-router";
 import React from "react";
 
@@ -15,7 +14,11 @@ const LibraryScreenLayout = () => {
       <Stack.Screen
         name="[param]"
         options={{
-          headerShown: false,
+          headerShown: true,
+          headerStyle: {
+            backgroundColor: Colors.dark.muted,
+          },
+          headerTintColor: Colors.dark.text,
         }}
       />
     </Stack>

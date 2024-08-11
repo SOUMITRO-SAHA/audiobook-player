@@ -1,10 +1,11 @@
 import musicDefaultImage from "@/assets/images/music-note.png";
+import { ThemedScreen } from "@/components";
 import ParallaxScrollView from "@/components/ParallaxScrollView";
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
 import { TrackList } from "@/components/track";
 import { Colors } from "@/constants";
-// import { getFolderContentByFolderName } from "@/lib/services/fs-worker";
+import { getFolderContentByFolderName } from "@/lib/services/media-library";
 import { usePlaylistStore } from "@/store";
 import { AntDesign } from "@expo/vector-icons";
 import { Image } from "expo-image";
@@ -33,26 +34,28 @@ const LibraryContentScreen = () => {
   const handleRefreshContent = React.useCallback(async () => {
     if (name && typeof name === "string") {
       try {
-        const tracks = null; // await getFolderContentByFolderName(name);
+        const tracks = await getFolderContentByFolderName(name);
 
         // Setting the Folders
-        // if (tracks && tracks.audios) {
-        //   setAllFiles(tracks.audios);
-        // }
+        if (tracks && tracks.audios) {
+          setAllFiles(tracks.audios);
+        }
 
-        // // Setting the CoverImages
-        // if (tracks && tracks.images) {
-        //   setCoverImages(tracks.images);
+        // Setting the CoverImages
+        if (tracks && tracks.images) {
+          setCoverImages(tracks.images);
 
-        //   // Setting the First Image as Cover Image
-        //   const firstImage = tracks.images[0];
-        //   setCoverImage(firstImage.uri);
-        // }
+          // Setting the First Image as Cover Image
+          const firstImage = tracks.images[0];
+          setCoverImage(firstImage.uri);
+        }
       } catch (error) {
         console.error(error);
       } finally {
         setInitialLoading(false);
       }
+    } else {
+      setInitialLoading(false);
     }
   }, [name, initialLoading]);
 
@@ -69,21 +72,22 @@ const LibraryContentScreen = () => {
   }, [name, navigation]);
 
   React.useEffect(() => {
-    handleRefreshContent();
+    const timeout = setTimeout(handleRefreshContent, 1000);
+    return () => clearTimeout(timeout);
   }, [name, initialLoading]);
 
   if (initialLoading) {
     return (
-      <ParallaxScrollView>
+      <ThemedScreen>
         <ThemedView className="flex items-center justify-center w-full h-full">
           <ActivityIndicator size={50} color={Colors.dark.primary} />
         </ThemedView>
-      </ParallaxScrollView>
+      </ThemedScreen>
     );
   }
 
   return (
-    <ParallaxScrollView>
+    <ThemedScreen>
       {allFiles && allFiles.length > 0 ? (
         <ThemedView style={styles.container}>
           <ThemedView
@@ -132,7 +136,7 @@ const LibraryContentScreen = () => {
           </ThemedView>
         </ThemedView>
       )}
-    </ParallaxScrollView>
+    </ThemedScreen>
   );
 };
 

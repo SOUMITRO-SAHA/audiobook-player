@@ -1,24 +1,24 @@
 import { ThemedScreen } from "@/components";
-import ParallaxScrollView from "@/components/ParallaxScrollView";
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
 import { TrackListItem } from "@/components/track";
 import { LibraryCard } from "@/components/ui";
 import { Colors } from "@/constants";
-import { readDefaultDirectory } from "@/lib/services/media-library";
+import { readDefaultDirectory } from "@/lib/services/fs-worker";
 import { cn } from "@/lib/utils";
 import { useAppStore, usePlaylistStore } from "@/store";
 import { Ionicons } from "@expo/vector-icons";
-import { Asset, Asset as AssetType } from "expo-media-library";
+import { Asset } from "expo-media-library";
 import * as React from "react";
 import { ActivityIndicator, FlatList, TouchableOpacity } from "react-native";
+import { ReadDirItem } from "react-native-fs";
 
 export default function LibraryScreen() {
   const [refreshCount, setRefreshCount] = React.useState<number>(0);
   const [refreshing, setRefreshing] = React.useState<boolean>(false);
 
-  const [files, setFiles] = React.useState<AssetType[] | null>(null);
-  const [folders, setFolders] = React.useState<any>(null);
+  const [files, setFiles] = React.useState<Asset[] | null>(null);
+  const [folders, setFolders] = React.useState<ReadDirItem[] | null>(null);
 
   // Store
   const { isLibraryLoading, setLibraryLoading, resetLibraryLoading } =
@@ -54,22 +54,12 @@ export default function LibraryScreen() {
     (async () => {
       setLibraryLoading();
       try {
-        const directories: any[] = [];
         const defaultDirectory = await readDefaultDirectory();
 
-        // if (defaultDirectory) {
-        // defaultDirectory.forEach(async (d) => {
-        //   if (d.isDirectory()) {
-        //     directories.push(d);
-        //   }
-        // });
-        // setFolders(directories);
-        // // And Adding all the files of Default Folder in the tracks
-        // const tracks = null; //await getAllFilesFromTheDefaultFolders();
-        // if (tracks && tracks.length > 0) {
-        //   setFiles(tracks);
-        // }
-        // }
+        if (defaultDirectory) {
+          setFolders(defaultDirectory.directories);
+          setFiles(defaultDirectory.files);
+        }
 
         // Also Updating the Store
         resetPlaylistName();
@@ -101,15 +91,18 @@ export default function LibraryScreen() {
           data={
             folders && files
               ? [
-                  ...folders.map(() => ({ type: "folder" })),
-                  ...files.map(() => ({ type: "file" })),
+                  ...folders.map((folder) => ({ ...folder, type: "folder" })),
+                  ...files.map((file) => ({ ...file, type: "file" })),
                 ]
               : []
           }
           renderItem={({ item }) => {
             if (item.type === "folder") {
               return (
-                <LibraryCard {...item} onPressThreeDots={handleThreeDotPress} />
+                <LibraryCard
+                  {...(item as ReadDirItem)}
+                  onPressThreeDots={handleThreeDotPress}
+                />
               );
             } else {
               return <TrackListItem track={item as Asset} />;
