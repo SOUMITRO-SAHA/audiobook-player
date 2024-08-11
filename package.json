@@ -37,6 +37,7 @@
     "drizzle-orm": "^0.32.1",
     "expo": "^51.0.22",
     "expo-asset": "~10.0.10",
+    "expo-av": "~14.0.6",
     "expo-blur": "~13.0.2",
     "expo-constants": "~16.0.2",
     "expo-dev-client": "~4.0.21",

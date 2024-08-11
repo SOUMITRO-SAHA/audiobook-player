@@ -35,6 +35,7 @@
     "plugins": [
       "expo-router",
       "expo-asset",
+      "expo-av",
       [
         "expo-media-library",
         {
