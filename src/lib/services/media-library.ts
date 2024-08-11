@@ -125,24 +125,29 @@ const AssetsCache: AssetsCacheProps = {
 
 const loadAllAssets = async () => {
   try {
+    const now = Date.now();
+    const oneMinute = 60 * 1000;
+
+    // Check if the cache is empty or if the cache is older than 1 minute
     if (
       !AssetsCache.assets ||
-      (AssetsCache.assets &&
-        AssetsCache.lastFetched &&
-        AssetsCache.lastFetched < Date.now())
+      (AssetsCache.lastFetched && now - AssetsCache.lastFetched > oneMinute)
     ) {
       let allAssets = await MediaLibrary.getAssetsAsync({
         mediaType: "audio",
       });
+
       allAssets = await MediaLibrary.getAssetsAsync({
         mediaType: "audio",
         first: allAssets.totalCount,
       });
 
-      // Now push to the Cache
+      // Now update the cache
       AssetsCache.assets = allAssets.assets;
-      AssetsCache.lastFetched = Date.now();
+      AssetsCache.lastFetched = now;
     }
+
+    return AssetsCache.assets;
   } catch (error) {
     console.error(error);
     if (error instanceof Error) {
@@ -151,36 +156,48 @@ const loadAllAssets = async () => {
   }
 };
 
-export const readDefaultDirectory = async () => {
+export const readFilesFromAssetsByPathName = async (path: string) => {
   try {
-    const defaultFolderUri = `${EXTERNAL_DIRECTORY_URL}${DEFAULT_FOLDER_NAME}`;
-    const getDefaultFolder = await getOrCreateDefaultDirectory();
-
-    if (getDefaultFolder) {
-      const folderInfo = await FileSystem.readDirectoryAsync(defaultFolderUri);
-
-      folderInfo?.map(async (folderName) => {
-        const url = encodeURIComponent(folderName);
-        console.log("URL ==>", url);
-        const info = await FileSystem.getInfoAsync(
-          `${defaultFolderUri}/${url}`
-        );
-
-        console.log("All Assets form the Audiobooks ===>", info);
-      });
+    const assets = await loadAllAssets();
+    if (assets) {
+      const file = assets.find((asset) => asset.uri.includes(path));
+      return file;
     }
-  } catch (error) {}
-};
-
-export const getAllFoldersFromAudiobook = async () => {
-  try {
-    const allFolders = await MediaLibrary.getAssetsAsync();
-    return allFolders;
   } catch (error) {
     console.error(error);
     if (error instanceof Error) {
       ToastAndroid.show(error.message, ToastAndroid.SHORT);
     }
+    throw error;
+  }
+};
+
+export const getFolderContentByFolderName = async (folderName: string) => {
+  try {
+    const contents = await MediaLibrary.getAlbumsAsync();
+
+    const filteredContent = contents.filter(
+      (content) => content.title === folderName
+    );
+
+    if (filteredContent.length > 0) {
+      // Getting all the files
+      const files = await MediaLibrary.getAssetsAsync({
+        mediaType: "audio",
+        album: filteredContent[0],
+      });
+
+      // Getting the cover images
+      const coverImages = await MediaLibrary.getAssetsAsync({
+        mediaType: "photo",
+        album: filteredContent[0],
+      });
+
+      return { audios: files.assets, images: coverImages.assets };
+    }
+    return null;
+  } catch (error) {
+    console.error(error);
   }
 };
 
