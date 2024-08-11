@@ -18,7 +18,7 @@ export default function ParallaxScrollView({
     <ThemedView className={cn("flex-1", className)} style={[style]}>
       <ThemedView
         style={styles.content}
-        className={cn("mt-8 flex-1 p-8 bg-background overflow-hidden")}
+        className={cn("flex-1 overflow-hidden")}
       >
         {children}
       </ThemedView>

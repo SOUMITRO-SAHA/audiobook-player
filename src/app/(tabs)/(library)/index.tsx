@@ -1,28 +1,24 @@
+import { ThemedScreen } from "@/components";
 import ParallaxScrollView from "@/components/ParallaxScrollView";
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
 import { TrackListItem } from "@/components/track";
 import { LibraryCard } from "@/components/ui";
 import { Colors } from "@/constants";
-import {
-  addNewFolderToTheApplication,
-  getAllFilesFromTheDefaultFolders,
-} from "@/lib/services/fs-worker";
-import { readDefaultDirectory } from "@/lib/services/rnfs";
+import { readDefaultDirectory } from "@/lib/services/media-library";
 import { cn } from "@/lib/utils";
 import { useAppStore, usePlaylistStore } from "@/store";
 import { Ionicons } from "@expo/vector-icons";
 import { Asset, Asset as AssetType } from "expo-media-library";
 import * as React from "react";
 import { ActivityIndicator, FlatList, TouchableOpacity } from "react-native";
-import { ReadDirItem } from "react-native-fs";
 
 export default function LibraryScreen() {
   const [refreshCount, setRefreshCount] = React.useState<number>(0);
   const [refreshing, setRefreshing] = React.useState<boolean>(false);
 
   const [files, setFiles] = React.useState<AssetType[] | null>(null);
-  const [folders, setFolders] = React.useState<ReadDirItem[] | null>(null);
+  const [folders, setFolders] = React.useState<any>(null);
 
   // Store
   const { isLibraryLoading, setLibraryLoading, resetLibraryLoading } =
@@ -32,7 +28,13 @@ export default function LibraryScreen() {
 
   const handleRefresh = async () => {
     try {
-      await addNewFolderToTheApplication();
+      // await addNewFolderToTheApplication();
+      setRefreshing(true);
+
+      const timestamp = setTimeout(() => {
+        setRefreshing(false);
+      }, 1000);
+      return () => clearTimeout(timestamp);
     } catch (error) {
       console.error(`Library Content Reloading ===>`, error);
     }
@@ -52,25 +54,22 @@ export default function LibraryScreen() {
     (async () => {
       setLibraryLoading();
       try {
-        const directories: ReadDirItem[] = [];
+        const directories: any[] = [];
         const defaultDirectory = await readDefaultDirectory();
 
-        if (defaultDirectory) {
-          defaultDirectory.forEach(async (d) => {
-            if (d.isDirectory()) {
-              directories.push(d);
-            }
-          });
-
-          setFolders(directories);
-
-          // And Adding all the files of Default Folder in the tracks
-          const tracks = await getAllFilesFromTheDefaultFolders();
-
-          if (tracks && tracks.length > 0) {
-            setFiles(tracks);
-          }
-        }
+        // if (defaultDirectory) {
+        // defaultDirectory.forEach(async (d) => {
+        //   if (d.isDirectory()) {
+        //     directories.push(d);
+        //   }
+        // });
+        // setFolders(directories);
+        // // And Adding all the files of Default Folder in the tracks
+        // const tracks = null; //await getAllFilesFromTheDefaultFolders();
+        // if (tracks && tracks.length > 0) {
+        //   setFiles(tracks);
+        // }
+        // }
 
         // Also Updating the Store
         resetPlaylistName();
@@ -81,7 +80,7 @@ export default function LibraryScreen() {
         resetLibraryLoading();
       }
     })();
-  }, []);
+  }, [refreshing]);
 
   // Render Components
   const renderLoadingCard = () => {
@@ -102,18 +101,15 @@ export default function LibraryScreen() {
           data={
             folders && files
               ? [
-                  ...folders.map((folder) => ({ ...folder, type: "folder" })),
-                  ...files.map((file) => ({ ...file, type: "file" })),
+                  ...folders.map(() => ({ type: "folder" })),
+                  ...files.map(() => ({ type: "file" })),
                 ]
               : []
           }
           renderItem={({ item }) => {
             if (item.type === "folder") {
               return (
-                <LibraryCard
-                  {...(item as ReadDirItem)}
-                  onPressThreeDots={handleThreeDotPress}
-                />
+                <LibraryCard {...item} onPressThreeDots={handleThreeDotPress} />
               );
             } else {
               return <TrackListItem track={item as Asset} />;
@@ -162,7 +158,7 @@ export default function LibraryScreen() {
   };
 
   return (
-    <ParallaxScrollView>
+    <ThemedScreen>
       <ThemedView className={cn("flex-row justify-between items-center")}>
         <ThemedText type="title">Library</ThemedText>
 
@@ -186,6 +182,6 @@ export default function LibraryScreen() {
 
       {/* For Loading New Card */}
       <ThemedView>{isLibraryLoading && renderLoadingCard()}</ThemedView>
-    </ParallaxScrollView>
+    </ThemedScreen>
   );
 }

@@ -1,17 +1,14 @@
 import { Colors } from "@/constants";
-import useLastActiveTrack from "@/hooks/useLastActiveTrack";
 import { SimpleLineIcons } from "@expo/vector-icons";
-import { useRouter } from "expo-router";
 import * as React from "react";
 import { StyleSheet, TouchableOpacity, View } from "react-native";
-import { useActiveTrack } from "react-native-track-player";
 import { ThemedView } from "../ThemedView";
 import { MovingText } from "./moving-text";
 import { PlayPauseButton, SkipToNextButton } from "./player-control";
 
 export const FloatingPlayer = () => {
-  const activeTrack = useActiveTrack();
-  const lastActiveTrack = useLastActiveTrack();
+  const activeTrack = null;
+  const lastActiveTrack = null; // useLastActiveTrack();
 
   const displayTrack = React.useMemo(
     () => activeTrack ?? lastActiveTrack,
@@ -37,7 +34,7 @@ export const FloatingPlayer = () => {
           </ThemedView>
           <View className="w-[98%] overflow-hidden">
             <MovingText
-              text={String(displayTrack.title)}
+              text={"" /*TODO: String(displayTrack.title)*/}
               animationThreshold={25}
               style={{
                 overflow: "hidden",

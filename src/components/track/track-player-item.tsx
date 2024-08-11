@@ -1,12 +1,11 @@
 import { Colors } from "@/constants";
-import { addSingleTrack, generateSingleTrack } from "@/lib/services/tracks";
+import { generateSingleTrack } from "@/lib/services/tracks";
 import { formatTime } from "@/lib/utils";
 import { usePlaylistStore } from "@/store";
 import { Entypo, FontAwesome } from "@expo/vector-icons";
 import { Asset } from "expo-media-library";
 import { useRouter } from "expo-router";
 import { TouchableHighlight } from "react-native";
-import { useActiveTrack } from "react-native-track-player";
 import { ThemedText } from "../ThemedText";
 import { ThemedView } from "../ThemedView";
 
@@ -17,7 +16,7 @@ export const TrackListItem = ({
   track: Asset;
   index?: number;
 }) => {
-  const isActiveTrack = useActiveTrack()?.url === track.uri;
+  const isActiveTrack = false;
 
   // Store
   const { playlistName, coverImage } = usePlaylistStore();
@@ -35,7 +34,7 @@ export const TrackListItem = ({
     });
 
     // then Add to the Track Player and also play
-    await addSingleTrack(track);
+    // await addSingleTrack(track);
 
     // Now Navigate to the Player
     router.navigate("/player");

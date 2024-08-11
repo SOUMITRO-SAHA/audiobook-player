@@ -1,9 +1,30 @@
+import { DEFAULT_FOLDER_NAME } from "@/constants";
 import { db } from "@/lib/db";
 import { folders } from "@/lib/db/schema";
 import { extractUriToGetName } from "@/lib/utils";
 import { eq } from "drizzle-orm";
 import * as FileSystem from "expo-file-system";
 import { ToastAndroid } from "react-native";
+
+export const createDefaultFolder = async () => {
+  try {
+    const directory =
+      await FileSystem.StorageAccessFramework.readDirectoryAsync(
+        DEFAULT_FOLDER_NAME
+      );
+
+    console.log("New directory: ", directory);
+
+    // const defaultFolderRecord = await db.insert(defaultFolder).values({
+    //   title: DEFAULT_FOLDER_NAME,
+    // });
+  } catch (error) {
+    console.error(error);
+    if (error instanceof Error) {
+      ToastAndroid.show(error.message, ToastAndroid.SHORT);
+    }
+  }
+};
 
 export const addNewFolder = async () => {
   try {

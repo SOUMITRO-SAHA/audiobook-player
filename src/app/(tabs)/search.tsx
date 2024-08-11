@@ -1,3 +1,4 @@
+import { ThemedScreen } from "@/components";
 import ParallaxScrollView from "@/components/ParallaxScrollView";
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
@@ -12,14 +13,14 @@ const SearchScreen: React.FC<SearchScreenProps> = (props) => {
   const [search, setSearch] = React.useState("");
 
   return (
-    <ParallaxScrollView>
+    <ThemedScreen>
       <ThemedView>
         <ThemedText type="title">Search</ThemedText>
       </ThemedView>
 
       {/* Search Box */}
       <SearchBox text={search} onChangeText={setSearch} />
-    </ParallaxScrollView>
+    </ThemedScreen>
   );
 };
 

@@ -7,9 +7,8 @@ import { LinearGradient } from "expo-linear-gradient";
 import { router } from "expo-router";
 import React, { useMemo } from "react";
 import { Pressable, StyleSheet, TouchableOpacity } from "react-native";
-import { ReadDirItem } from "react-native-fs";
 
-interface LibraryProps extends ReadDirItem {
+interface LibraryProps {
   onPressThreeDots: (name: string) => void;
 }
 
@@ -24,19 +23,19 @@ export const LibraryCard: React.FC<LibraryProps> = (props) => {
       onPress={() => {
         router.push({
           pathname: `[param]`,
-          params: { name: props.name },
+          params: { name: "" },
         });
       }}
     >
       <ThemedView className="flex flex-row items-center space-x-3 w-[90%] bg-transparent">
         <LinearGradient colors={color} style={styles.gradient} />
-        <ThemedText className="text-gray-400">{props.name}</ThemedText>
+        <ThemedText className="text-gray-400">{""}</ThemedText>
       </ThemedView>
 
       <Pressable
         className="W-[10%]"
         onPress={() => {
-          props.onPressThreeDots(props.name);
+          props.onPressThreeDots("");
         }}
       >
         <ThemedView className="bg-transparent">

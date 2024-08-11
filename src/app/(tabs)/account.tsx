@@ -1,3 +1,4 @@
+import { ThemedScreen } from "@/components";
 import ParallaxScrollView from "@/components/ParallaxScrollView";
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
@@ -108,7 +109,7 @@ const AccountScreen = () => {
   }, [accountData]);
 
   return (
-    <ParallaxScrollView>
+    <ThemedScreen>
       <ThemedView className="flex-col w-full">
         <ThemedText type="title">Account</ThemedText>
       </ThemedView>
@@ -122,30 +123,6 @@ const AccountScreen = () => {
             setFormData((prev) => ({
               ...prev,
               username: value,
-            }));
-          }}
-        />
-      </ThemedView>
-
-      {/* Theme */}
-      <ThemedView>
-        <ThemedText className="px-1 mb-1">System Theme</ThemedText>
-
-        <SelectDropdown
-          data={[
-            { title: "light", icon: "sunny" },
-            { title: "dark", icon: "dark-mode" },
-          ]}
-          placeholder="Select the theme"
-          state={theme}
-          setState={(value) => {
-            const { title } = value as unknown as {
-              icon: string;
-              title: string;
-            };
-            setFormData((prev) => ({
-              ...prev,
-              theme: title,
             }));
           }}
         />
@@ -168,17 +145,15 @@ const AccountScreen = () => {
         </ThemedView>
       )}
 
-      <ThemedView style={{ flex: 1 }}>
-        <TouchableOpacity onPress={handleAccountUpdate}>
-          <ThemedView
-            className="flex items-center justify-center w-full h-12 mt-5 rounded-xl"
-            style={{ backgroundColor: Colors.dark.primary }}
-          >
-            <ThemedText className="text-lg">Save</ThemedText>
-          </ThemedView>
-        </TouchableOpacity>
-      </ThemedView>
-    </ParallaxScrollView>
+      <TouchableOpacity activeOpacity={0.8} onPress={handleAccountUpdate}>
+        <ThemedView
+          className="flex items-center justify-center w-full h-12 mt-5 rounded-xl"
+          style={{ backgroundColor: Colors.dark.primary }}
+        >
+          <ThemedText className="text-lg">Save</ThemedText>
+        </ThemedView>
+      </TouchableOpacity>
+    </ThemedScreen>
   );
 };
 

@@ -7,6 +7,15 @@ CREATE TABLE `account` (
 	`updated_at` text DEFAULT CURRENT_TIMESTAMP
 );
 --> statement-breakpoint
+CREATE TABLE `default_folder` (
+	`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL,
+	`folder_id` text NOT NULL,
+	`title` text DEFAULT 'Audiobook',
+	`uri` text,
+	`created_at` text DEFAULT CURRENT_TIMESTAMP,
+	`updated_at` text DEFAULT CURRENT_TIMESTAMP
+);
+--> statement-breakpoint
 CREATE TABLE `folders` (
 	`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL,
 	`name` text NOT NULL,

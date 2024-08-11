@@ -2,16 +2,11 @@ import { colors, Colors } from "@/constants";
 import { cn, formateDurationInText, formatTime } from "@/lib/utils";
 import { utilsStyles } from "@/styles";
 import { FontAwesome, FontAwesome6, MaterialIcons } from "@expo/vector-icons";
-import { TouchableHighlight } from "@gorhom/bottom-sheet";
 import * as React from "react";
 import { View, ViewStyle } from "react-native";
 import { Slider } from "react-native-awesome-slider";
 import { TouchableOpacity } from "react-native-gesture-handler";
 import { useSharedValue } from "react-native-reanimated";
-import TrackPlayer, {
-  useIsPlaying,
-  useProgress,
-} from "react-native-track-player";
 import { ThemedText } from "../ThemedText";
 
 interface PlayerControlProps {
@@ -63,7 +58,7 @@ export const PlayPauseButton = ({
   style,
   className,
 }: PlayerControlButtonProps) => {
-  const { playing } = useIsPlaying();
+  const playing = false; //TODO: useIsPlaying();
 
   return (
     <View style={[style]} className={cn("", className)}>
@@ -72,10 +67,10 @@ export const PlayPauseButton = ({
         onPress={
           playing
             ? async () => {
-                await TrackPlayer.pause();
+                // await TrackPlayer.pause();
               }
             : async () => {
-                await TrackPlayer.play();
+                // await TrackPlayer.play();
               }
         }
       >
@@ -99,7 +94,7 @@ export const SkipToNextButton = ({
       <TouchableOpacity
         activeOpacity={0.7}
         onPress={async () => {
-          await TrackPlayer.skipToNext();
+          // await TrackPlayer.skipToNext();
         }}
       >
         <FontAwesome6
@@ -122,7 +117,8 @@ export const SkipToPreviousButton = ({
       <TouchableOpacity
         activeOpacity={0.7}
         onPress={async () => {
-          await TrackPlayer.skipToPrevious();
+          // TODO:
+          // await TrackPlayer.skipToPrevious();
         }}
       >
         <FontAwesome6
@@ -144,14 +140,15 @@ export const SeekTo30SBackward = ({
   className?: string;
   size?: number;
 }) => {
-  const { position } = useProgress();
+  //TODO: const { position } = useProgress();
 
   return (
     <View className={cn(className)} style={[style]}>
       <TouchableOpacity
         activeOpacity={0.7}
         onPress={async () => {
-          await TrackPlayer.seekBy(position - 30);
+          // TODO:
+          // await TrackPlayer.seekBy(position - 30);
         }}
       >
         <MaterialIcons
@@ -173,14 +170,14 @@ export const SeekTo30Forward = ({
   className?: string;
   size?: number;
 }) => {
-  const { position } = useProgress();
+  // const { position } = useProgress();
 
   return (
     <View className={cn(className)} style={[style]}>
       <TouchableOpacity
         activeOpacity={0.7}
         onPress={async () => {
-          await TrackPlayer.seekBy(position + 30);
+          // await TrackPlayer.seekBy(position + 30);
         }}
       >
         <MaterialIcons
@@ -194,7 +191,8 @@ export const SeekTo30Forward = ({
 };
 
 export const PlayerProgressBar = ({ style }: { style?: ViewStyle }) => {
-  const { duration, position } = useProgress(250);
+  // const { duration, position } = useProgress(250);
+  const { duration, position } = { duration: 40000, position: 2044 };
   const [currentTrackSpeed, setCurrentTrackSpeed] = React.useState(1);
 
   const isSliding = useSharedValue(false);
@@ -213,10 +211,10 @@ export const PlayerProgressBar = ({ style }: { style?: ViewStyle }) => {
   // Side Effects
   React.useEffect(() => {
     (async () => {
-      const getTrackPlayerCurrentSpeed = await TrackPlayer.getRate();
-      if (getTrackPlayerCurrentSpeed) {
-        setCurrentTrackSpeed(getTrackPlayerCurrentSpeed);
-      }
+      // const getTrackPlayerCurrentSpeed = await TrackPlayer.getRate();
+      // if (getTrackPlayerCurrentSpeed) {
+      // setCurrentTrackSpeed(getTrackPlayerCurrentSpeed);
+      // }
     })();
   }, []);
 
@@ -236,13 +234,13 @@ export const PlayerProgressBar = ({ style }: { style?: ViewStyle }) => {
             minimumTrackTintColor: colors.minimumTrackTintColor,
           }}
           onValueChange={async (value) => {
-            await TrackPlayer.seekTo(value * duration);
+            // await TrackPlayer.seekTo(value * duration);
           }}
           onSlidingComplete={async (value) => {
             if (!isSliding.value) return;
             isSliding.value = false;
 
-            await TrackPlayer.seekTo(value * duration);
+            // await TrackPlayer.seekTo(value * duration);
           }}
         />
       </View>

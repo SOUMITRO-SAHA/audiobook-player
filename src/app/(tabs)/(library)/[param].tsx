@@ -4,7 +4,7 @@ import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
 import { TrackList } from "@/components/track";
 import { Colors } from "@/constants";
-import { getFolderContentByFolderName } from "@/lib/services/fs-worker";
+// import { getFolderContentByFolderName } from "@/lib/services/fs-worker";
 import { usePlaylistStore } from "@/store";
 import { AntDesign } from "@expo/vector-icons";
 import { Image } from "expo-image";
@@ -33,21 +33,21 @@ const LibraryContentScreen = () => {
   const handleRefreshContent = React.useCallback(async () => {
     if (name && typeof name === "string") {
       try {
-        const tracks = await getFolderContentByFolderName(name);
+        const tracks = null; // await getFolderContentByFolderName(name);
 
         // Setting the Folders
-        if (tracks && tracks.audios) {
-          setAllFiles(tracks.audios);
-        }
+        // if (tracks && tracks.audios) {
+        //   setAllFiles(tracks.audios);
+        // }
 
-        // Setting the CoverImages
-        if (tracks && tracks.images) {
-          setCoverImages(tracks.images);
+        // // Setting the CoverImages
+        // if (tracks && tracks.images) {
+        //   setCoverImages(tracks.images);
 
-          // Setting the First Image as Cover Image
-          const firstImage = tracks.images[0];
-          setCoverImage(firstImage.uri);
-        }
+        //   // Setting the First Image as Cover Image
+        //   const firstImage = tracks.images[0];
+        //   setCoverImage(firstImage.uri);
+        // }
       } catch (error) {
         console.error(error);
       } finally {

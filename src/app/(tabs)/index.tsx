@@ -10,6 +10,7 @@ import { Account } from "@/types/database";
 import { Ionicons, MaterialIcons } from "@expo/vector-icons";
 import * as React from "react";
 import { TouchableOpacity } from "react-native-gesture-handler";
+import { ThemedScreen } from "@/components";
 
 export default function HomeScreen() {
   const [account, setAccount] = React.useState<Account | null>(null);
@@ -33,7 +34,7 @@ export default function HomeScreen() {
   }, [isLoading]);
 
   return (
-    <ParallaxScrollView className="relative">
+    <ThemedScreen>
       <ThemedView className="flex-row items-center justify-between">
         <ThemedText type="title" className="capitalize">{`Welcome, ${
           account?.username?.split(" ")[0]
@@ -63,7 +64,7 @@ export default function HomeScreen() {
         <MaterialIcons name="history" size={24} color="#e2e8f0" />
         <ThemedText className="text-slate-200">History</ThemedText>
       </ThemedView>
-    </ParallaxScrollView>
+    </ThemedScreen>
   );
 }
 

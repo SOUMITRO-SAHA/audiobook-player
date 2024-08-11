@@ -3,7 +3,6 @@ import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { BottomSheetModal, TouchableOpacity } from "@gorhom/bottom-sheet";
 import * as React from "react";
 import { View } from "react-native";
-import TrackPlayer from "react-native-track-player";
 import { ThemedText } from "../ThemedText";
 import { BottomSheet } from "../bottom-sheet";
 
@@ -13,14 +12,6 @@ const PlayerFeatures = () => {
   const timerRef = React.useRef<BottomSheetModal>(null);
 
   // Side Effects
-  React.useEffect(() => {
-    (async () => {
-      const rate = await TrackPlayer.getRate();
-      if (rate) {
-        setCurrentRate(rate);
-      }
-    })();
-  }, []);
 
   return (
     <View className="flex flex-row mt-6 -mb-8 justify-evenly">
