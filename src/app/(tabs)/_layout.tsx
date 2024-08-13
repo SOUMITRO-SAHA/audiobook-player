@@ -5,16 +5,25 @@ import { AntDesign } from "@expo/vector-icons";
 import Entypo from "@expo/vector-icons/Entypo";
 import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
 import { BlurView } from "expo-blur";
-import { Tabs } from "expo-router";
+import { Tabs, useRouter } from "expo-router";
 import React from "react";
-import { StyleSheet } from "react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 
 export default function TabLayout() {
-  const colorScheme = useColorScheme();
+  const router = useRouter();
 
+  const handleFloatingPlayerPress = async () => {
+    // Navigate to the search screen
+    router.navigate({
+      pathname: "player",
+    });
+  };
   return (
-    <SafeAreaProvider>
+    <SafeAreaProvider
+      style={{
+        position: "relative",
+      }}
+    >
       <Tabs
         screenOptions={{
           tabBarInactiveTintColor: Colors.dark.text,
@@ -96,7 +105,8 @@ export default function TabLayout() {
       </Tabs>
 
       {/* Floating Player */}
-      <FloatingPlayer />
+
+      <FloatingPlayer onNavigate={handleFloatingPlayerPress} />
     </SafeAreaProvider>
   );
 }

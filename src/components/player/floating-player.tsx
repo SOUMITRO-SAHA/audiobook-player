@@ -5,21 +5,24 @@ import { StyleSheet, TouchableOpacity, View } from "react-native";
 import { ThemedView } from "../ThemedView";
 import { MovingText } from "./moving-text";
 import { PlayPauseButton, SkipToNextButton } from "./player-control";
-import { useMusicPlayer } from "@/hooks/useMusicPlayer";
+import { useMusicStore } from "@/store/playerStore";
 
-export const FloatingPlayer = () => {
-  const { currentTrack, isPlaying } = useMusicPlayer();
-  const lastActiveTrack = null; // useLastActiveTrack();
+export type FloatingPlayerProps = {
+  onNavigate: () => void;
+};
+
+export const FloatingPlayer = ({ onNavigate }: FloatingPlayerProps) => {
+  const { isPlaying, currentTrack } = useMusicStore();
+
+  const handleButtonPress = () => {
+    onNavigate?.();
+  };
 
   if (!isPlaying && !currentTrack) return null;
 
   return (
-    <View
-      className="absolute p-2 px-5 bottom-14 rounded-xl"
-      style={styles.container}
-    >
-      <TouchableOpacity activeOpacity={0.9}>
-        {/* <Image source={activeTrack.artwork} style={styles.trackArtWorkImage} /> */}
+    <View className="absolute p-2 px-5 rounded-xl" style={styles.container}>
+      <TouchableOpacity activeOpacity={0.9} onPress={handleButtonPress}>
         <View className="flex flex-row items-center space-x-2 max-w-[80%]">
           <ThemedView className="flex items-center justify-center w-12 h-12 p-1 rounded">
             <SimpleLineIcons
@@ -56,6 +59,7 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     left: 8,
     right: 8,
+    bottom: 70,
     backgroundColor: Colors.dark.muted,
   },
   trackArtWorkImage: {},
