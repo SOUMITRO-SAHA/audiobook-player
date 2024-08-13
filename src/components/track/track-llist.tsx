@@ -25,7 +25,7 @@ export const TrackList = ({
       }}
       data={trackList}
       renderItem={({ item, index }) => (
-        <TrackListItem track={item} index={index} />
+        <TrackListItem track={item} index={index + 1} />
       )}
       ListFooterComponent={() => {
         if (trackList.length > 0) {
