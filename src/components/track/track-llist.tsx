@@ -5,7 +5,6 @@ import { TouchableOpacity } from "react-native-gesture-handler";
 import { ThemedText } from "../ThemedText";
 import { ThemedView } from "../ThemedView";
 import { TrackListItem } from "./track-player-item";
-import { useRouter } from "expo-router";
 
 export const TrackList = ({
   trackList,
@@ -16,12 +15,10 @@ export const TrackList = ({
   trackList: Asset[];
   handleRefresh: () => void;
 }) => {
-  // Functions
-
   return (
     <FlatList
       style={{
-        height: 450,
+        height: 390,
       }}
       data={trackList}
       renderItem={({ item, index }) => (

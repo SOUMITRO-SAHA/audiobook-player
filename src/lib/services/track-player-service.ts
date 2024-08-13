@@ -1,4 +1,4 @@
-import { useTrackPlayerStore } from "@/store";
+import { Asset } from "expo-media-library";
 import * as React from "react";
 import TrackPlayer, {
   AppKilledPlaybackBehavior,
@@ -8,6 +8,8 @@ import TrackPlayer, {
   Track,
   useTrackPlayerEvents,
 } from "react-native-track-player";
+
+import { usePlaylistStore, useTrackPlayerStore } from "@/store";
 
 const InitializePlaybackService = async () => {
   // Initializing the player
@@ -106,9 +108,52 @@ export const useLogTrackPlayerState = () => {
   });
 };
 
-export async function addTracks(track: Track) {
-  await TrackPlayer.add([track]);
+export async function addSingleTrack(track: Asset) {
+  // Store
+  const { coverImage } = usePlaylistStore.getState();
+
+  const currentTrack: Track = {
+    url: track.uri,
+    title: track.filename,
+    duration: track.duration,
+    artist: "Unknown",
+    album: track.filename,
+    id: track.id,
+  };
+
+  if (coverImage) {
+    currentTrack.artwork = coverImage;
+  }
+
+  await TrackPlayer.load(currentTrack);
   await TrackPlayer.setRepeatMode(RepeatMode.Queue);
+  await TrackPlayer.play();
+}
+
+export async function addTracks(tracks: Asset[]) {
+  // Store
+  const { coverImage } = usePlaylistStore.getState();
+
+  const allTracks = tracks.map((track) => {
+    const currentTrack: Track = {
+      url: track.uri,
+      title: track.filename,
+      duration: track.duration,
+      artist: "Unknown",
+      album: track.filename,
+      id: track.id,
+    };
+
+    if (coverImage) {
+      currentTrack.artwork = coverImage;
+    }
+
+    return currentTrack;
+  });
+
+  await TrackPlayer.add(allTracks);
+  await TrackPlayer.setRepeatMode(RepeatMode.Queue);
+  await TrackPlayer.play();
 }
 
 export const PlaybackService = async () => {

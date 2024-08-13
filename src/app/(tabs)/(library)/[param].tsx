@@ -6,14 +6,17 @@ import { ThemedView } from "@/components/ThemedView";
 import { TrackList } from "@/components/track";
 import { Colors } from "@/constants";
 import { getFolderContentByFolderName } from "@/lib/services/media-library";
+import { addTracks } from "@/lib/services/track-player-service";
+import { cn, extractLocalImageUrl } from "@/lib/utils";
 import { usePlaylistStore } from "@/store";
 import { AntDesign } from "@expo/vector-icons";
 import { Image } from "expo-image";
 import { Asset } from "expo-media-library";
 import { useLocalSearchParams, useNavigation, useRouter } from "expo-router";
 import * as React from "react";
-import { ActivityIndicator, StyleSheet } from "react-native";
+import { ActivityIndicator, StyleSheet, ToastAndroid } from "react-native";
 import { TouchableOpacity } from "react-native-gesture-handler";
+import TrackPlayer from "react-native-track-player";
 
 const LibraryContentScreen = () => {
   const { name } = useLocalSearchParams();
@@ -22,10 +25,9 @@ const LibraryContentScreen = () => {
   // States
   const [initialLoading, setInitialLoading] = React.useState<boolean>(true);
   const [allFiles, setAllFiles] = React.useState<Asset[] | null>(null);
-  const [coverImages, setCoverImages] = React.useState<Asset[] | null>(null);
 
   // Store
-  const { setCoverImage, setPlaylistName } = usePlaylistStore();
+  const { setCoverImage, coverImage, setPlaylistName } = usePlaylistStore();
 
   // Router
   const router = useRouter();
@@ -43,11 +45,14 @@ const LibraryContentScreen = () => {
 
         // Setting the CoverImages
         if (tracks && tracks.images) {
-          setCoverImages(tracks.images);
-
           // Setting the First Image as Cover Image
           const firstImage = tracks.images[0];
-          setCoverImage(firstImage.uri);
+          if (firstImage) {
+            const uri = extractLocalImageUrl(firstImage.uri);
+            if (uri) {
+              setCoverImage(uri);
+            }
+          }
         }
       } catch (error) {
         console.error(error);
@@ -58,6 +63,20 @@ const LibraryContentScreen = () => {
       setInitialLoading(false);
     }
   }, [name, initialLoading]);
+
+  const handleAddingPlaylist = React.useCallback(async () => {
+    // First Clearing all the tracks that might be in the playlist
+    await TrackPlayer.reset();
+
+    // Now adding all files to the playlist
+    if (allFiles) {
+      addTracks(allFiles);
+      return;
+    } else {
+      ToastAndroid.show("Playlist is empty", ToastAndroid.CENTER);
+      return;
+    }
+  }, []);
 
   // Side Effects
   React.useEffect(() => {
@@ -87,18 +106,38 @@ const LibraryContentScreen = () => {
   }
 
   return (
-    <ThemedScreen>
+    <ThemedScreen
+      style={{
+        marginTop: 0,
+      }}
+    >
       {allFiles && allFiles.length > 0 ? (
-        <ThemedView style={styles.container}>
+        <ThemedView style={[styles.container]}>
           <ThemedView
-            className="p-3 mx-auto mb-6 bg-transparent rounded-xl"
+            className={cn("mx-auto mb-8 rounded-xl", coverImage ? "" : "p-3")}
             style={{
               backgroundColor: Colors.dark.primary,
             }}
           >
-            <Image source={musicDefaultImage} style={styles.coverImage} />
+            <Image
+              source={coverImage ?? musicDefaultImage}
+              style={[
+                styles.coverImage,
+                coverImage
+                  ? {
+                      resizeMode: "cover",
+                    }
+                  : {
+                      resizeMode: "contain",
+                      marginTop: 20,
+                    },
+              ]}
+            />
 
-            <TouchableOpacity className="absolute -bottom-8 left-1/2">
+            <TouchableOpacity
+              className="absolute -bottom-8 left-1/2"
+              onPress={handleAddingPlaylist}
+            >
               <ThemedView
                 style={styles.playButton}
                 className="flex flex-row items-center justify-center w-16 h-16 space-x-3 border-4 rounded-full shadow"
@@ -143,18 +182,16 @@ const LibraryContentScreen = () => {
 const styles = StyleSheet.create({
   container: {
     backgroundColor: Colors.dark.background,
-    paddingBottom: 50,
+    paddingBottom: 80,
   },
   playButton: {
     backgroundColor: Colors.light.destructive,
     transform: [{ translateX: -33 }],
   },
   coverImage: {
-    width: 200,
-    height: 200,
-    marginTop: 20,
-    resizeMode: "contain",
     borderRadius: 10,
+    width: 200,
+    height: 250,
     position: "relative",
     overflow: "hidden",
   },

@@ -1,13 +1,21 @@
 import { Colors } from "@/constants";
 import React from "react";
-import { StyleSheet } from "react-native";
+import { StyleSheet, ViewStyle } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { ThemedView } from "./ThemedView";
 
-export const ThemedScreen = ({ children }: { children: React.ReactNode }) => {
+export const ThemedScreen = ({
+  children,
+  style,
+}: {
+  children: React.ReactNode;
+  style?: ViewStyle;
+}) => {
   return (
     <SafeAreaView style={styles.container}>
-      <ThemedView style={styles.view}>{children}</ThemedView>
+      <ThemedView style={[styles.view, style ? style : { marginTop: 24 }]}>
+        {children}
+      </ThemedView>
     </SafeAreaView>
   );
 };
@@ -21,7 +29,6 @@ const styles = StyleSheet.create({
     position: "relative",
   },
   view: {
-    marginTop: 24,
     paddingHorizontal: 16,
     overflow: "hidden",
     gap: 16,

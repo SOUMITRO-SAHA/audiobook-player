@@ -3,12 +3,18 @@ import { Asset } from "expo-media-library";
 import { TouchableHighlight } from "react-native";
 
 import { Colors } from "@/constants";
+import { addSingleTrack } from "@/lib/services/track-player-service";
 import { formatTime } from "@/lib/utils";
-import { Track, useMusicStore } from "@/store/playerStore";
+import { useMusicStore } from "@/store/playerStore";
 import * as React from "react";
 import { MovingText } from "../player";
 import { ThemedText } from "../ThemedText";
 import { ThemedView } from "../ThemedView";
+import {
+  State,
+  useActiveTrack,
+  usePlaybackState,
+} from "react-native-track-player";
 
 export const TrackListItem = ({
   track,
@@ -17,22 +23,15 @@ export const TrackListItem = ({
   track: Asset;
   index?: number;
 }) => {
-  // Store
-  const { currentTrack, setCurrentTrack, setCurrentPlaylistIndex } =
-    useMusicStore();
-
-  const isActiveTrack = currentTrack?.uri === track.uri;
+  const isActiveTrack = useActiveTrack()?.url === track.uri;
+  const { state } = usePlaybackState();
 
   const handleTrackListItemPress = async (item: Asset) => {
     if (index) {
-      setCurrentPlaylistIndex(index);
+      // setCurrentPlaylistIndex(index);
+      // TODO
     } else {
-      const formattedTrack: Track = {
-        uri: item.uri,
-        id: item.id,
-        title: item.filename,
-      };
-      setCurrentTrack(formattedTrack);
+      addSingleTrack(item);
     }
   };
 
@@ -56,7 +55,7 @@ export const TrackListItem = ({
       <ThemedView className="flex flex-row items-center justify-between p-3 space-x-4 bg-slate-800 rounded-xl">
         <ThemedView className="flex items-center justify-center w-10 h-10 p-2 rounded-full">
           <FontAwesome
-            name={isActiveTrack ? "pause" : "play"}
+            name={state === State.Playing ? "pause" : "play"}
             size={16}
             color={Colors.dark.primary}
           />

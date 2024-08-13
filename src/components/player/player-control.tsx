@@ -10,6 +10,15 @@ import { useSharedValue } from "react-native-reanimated";
 import { ThemedText } from "../ThemedText";
 import { useMusicPlayer } from "@/hooks/useMusicPlayer";
 import { useMusicStore } from "@/store/playerStore";
+import TrackPlayer, {
+  PlaybackState,
+  State,
+  Track,
+  useActiveTrack,
+  usePlaybackState,
+  useProgress,
+} from "react-native-track-player";
+import { usePlaylistStore } from "@/store";
 
 interface PlayerControlProps {
   style?: ViewStyle;
@@ -27,6 +36,16 @@ export const PlayerControls = ({
   className,
   ...rest
 }: PlayerControlProps) => {
+  const [queue, setQueue] = React.useState<Track[] | null>(null);
+
+  // Side Effects
+  React.useEffect(() => {
+    (async () => {
+      const queue = await TrackPlayer.getQueue();
+      setQueue(queue);
+    })();
+  }, []);
+
   return (
     <View>
       {/* Progress Bar */}
@@ -37,7 +56,7 @@ export const PlayerControls = ({
       {/* Controllers */}
       <View className="flex flex-row items-center mx-auto my-8 space-x-8">
         {/* Skip to Previous Button */}
-        <SkipToPreviousButton size={30} />
+        {queue && queue.length > 1 && <SkipToPreviousButton size={30} />}
 
         {/* Seek to 30s Backward */}
         <SeekTo30SBackward size={40} />
@@ -49,7 +68,7 @@ export const PlayerControls = ({
         <SeekTo30Forward size={40} />
 
         {/* Skip to Next Button */}
-        <SkipToNextButton size={30} />
+        {queue && queue.length > 1 && <SkipToNextButton size={30} />}
       </View>
     </View>
   );
@@ -60,26 +79,24 @@ export const PlayPauseButton = ({
   style,
   className,
 }: PlayerControlButtonProps) => {
-  const { isPlaying, pauseMusic, playMusic } = useMusicStore();
-
-  console.log("In Side PlayPause Controller ===>", isPlaying);
+  const { state } = usePlaybackState();
 
   return (
     <View style={[style]} className={cn("", className)}>
       <TouchableOpacity
         activeOpacity={0.85}
         onPress={
-          isPlaying
+          state === State.Playing
             ? async () => {
-                pauseMusic();
+                await TrackPlayer.pause();
               }
             : async () => {
-                playMusic();
+                await TrackPlayer.play();
               }
         }
       >
         <FontAwesome
-          name={true ? "pause" : "play"}
+          name={state === State.Playing ? "pause" : "play"}
           size={size}
           color={Colors.dark.foreground}
         />
@@ -98,7 +115,7 @@ export const SkipToNextButton = ({
       <TouchableOpacity
         activeOpacity={0.7}
         onPress={async () => {
-          // await TrackPlayer.skipToNext();
+          await TrackPlayer.skipToNext();
         }}
       >
         <FontAwesome6
@@ -121,8 +138,7 @@ export const SkipToPreviousButton = ({
       <TouchableOpacity
         activeOpacity={0.7}
         onPress={async () => {
-          // TODO:
-          // await TrackPlayer.skipToPrevious();
+          await TrackPlayer.skipToPrevious();
         }}
       >
         <FontAwesome6
@@ -144,15 +160,12 @@ export const SeekTo30SBackward = ({
   className?: string;
   size?: number;
 }) => {
-  //TODO: const { position } = useProgress();
-
   return (
     <View className={cn(className)} style={[style]}>
       <TouchableOpacity
         activeOpacity={0.7}
         onPress={async () => {
-          // TODO:
-          // await TrackPlayer.seekBy(position - 30);
+          await TrackPlayer.seekBy(-30);
         }}
       >
         <MaterialIcons
@@ -174,14 +187,12 @@ export const SeekTo30Forward = ({
   className?: string;
   size?: number;
 }) => {
-  // const { position } = useProgress();
-
   return (
     <View className={cn(className)} style={[style]}>
       <TouchableOpacity
         activeOpacity={0.7}
         onPress={async () => {
-          // await TrackPlayer.seekBy(position + 30);
+          await TrackPlayer.seekBy(30);
         }}
       >
         <MaterialIcons
@@ -195,9 +206,10 @@ export const SeekTo30Forward = ({
 };
 
 export const PlayerProgressBar = ({ style }: { style?: ViewStyle }) => {
-  // const { duration, position } = useProgress(250);
-  const { duration, position } = { duration: 40000, position: 2044 };
-  const [currentTrackSpeed, setCurrentTrackSpeed] = React.useState(1);
+  const { duration, position } = useProgress(250);
+
+  // Store
+  const { playbackSpeed } = usePlaylistStore();
 
   const isSliding = useSharedValue(false);
   const progress = useSharedValue(0);
@@ -206,21 +218,13 @@ export const PlayerProgressBar = ({ style }: { style?: ViewStyle }) => {
 
   const trackElapsedTime = formatTime(position);
   const trackRemainingTime = formatTime(duration - position);
-  const trackDuration = formatTime(duration);
-
-  if (!isSliding.value) {
-    progress.value = duration > 0 ? position / duration : 0;
-  }
 
   // Side Effects
   React.useEffect(() => {
-    (async () => {
-      // const getTrackPlayerCurrentSpeed = await TrackPlayer.getRate();
-      // if (getTrackPlayerCurrentSpeed) {
-      // setCurrentTrackSpeed(getTrackPlayerCurrentSpeed);
-      // }
-    })();
-  }, []);
+    if (!isSliding.value) {
+      progress.value = duration > 0 ? position / duration : 0;
+    }
+  }, [position, duration, isSliding]);
 
   return (
     <View style={[style]}>
@@ -238,13 +242,13 @@ export const PlayerProgressBar = ({ style }: { style?: ViewStyle }) => {
             minimumTrackTintColor: colors.minimumTrackTintColor,
           }}
           onValueChange={async (value) => {
-            // await TrackPlayer.seekTo(value * duration);
+            await TrackPlayer.seekTo(value * duration);
           }}
           onSlidingComplete={async (value) => {
             if (!isSliding.value) return;
-            isSliding.value = false;
 
-            // await TrackPlayer.seekTo(value * duration);
+            isSliding.value = false;
+            await TrackPlayer.seekTo(value * duration);
           }}
         />
       </View>
@@ -252,12 +256,15 @@ export const PlayerProgressBar = ({ style }: { style?: ViewStyle }) => {
       {/* Times */}
       <View className="flex flex-row items-center justify-between mt-3">
         <ThemedText>{trackElapsedTime}</ThemedText>
-        <ThemedText className="text-xl text-slate-300">
-          {Number(trackDuration) > 0
-            ? formateDurationInText(Number(trackDuration))
-            : ""}{" "}
-          ({currentTrackSpeed}
-          X)
+        <ThemedText
+          className="p-1 px-2 text-sm rounded-full"
+          style={{
+            backgroundColor: Colors.dark.muted,
+            color: Colors.dark.text,
+          }}
+        >
+          {duration > 0 ? formateDurationInText(duration) : ""} ({playbackSpeed}
+          x)
         </ThemedText>
         <ThemedText>{trackRemainingTime}</ThemedText>
       </View>

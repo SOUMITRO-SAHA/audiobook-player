@@ -1,3 +1,5 @@
+import { DEFAULT_FOLDER_NAME } from "@/constants";
+
 export const formatTimestamp = (timestamp: string): string => {
   const date = new Date(timestamp);
   const options: Intl.DateTimeFormatOptions = {
@@ -68,3 +70,16 @@ export const formateDurationInText = (seconds: number) => {
     return `${pad(minutes)}m ${pad(remainingSeconds)}s`;
   }
 };
+
+export function extractLocalImageUrl(url: string) {
+  const splitString = `${DEFAULT_FOLDER_NAME}/`;
+  const str = url.split(splitString);
+  const secondPart = str.pop();
+  const firstPart = str.pop();
+  if (secondPart) {
+    const encodedUri = encodeURIComponent(secondPart);
+    return `${firstPart}${splitString}${encodedUri}`;
+  }
+
+  return null;
+}

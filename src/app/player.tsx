@@ -4,7 +4,6 @@ import PlayerFeatures from "@/components/player/player-features";
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
 import { Colors, screenPadding } from "@/constants";
-import { useMusicStore } from "@/store/playerStore";
 import { defaultStyles } from "@/styles";
 import { Feather } from "@expo/vector-icons";
 import { Image } from "expo-image";
@@ -12,6 +11,7 @@ import { LinearGradient } from "expo-linear-gradient";
 import * as React from "react";
 import { ActivityIndicator, StyleSheet, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import TrackPlayer, { Track, useActiveTrack } from "react-native-track-player";
 
 const blurhash =
   "|rF?hV%2WCj[ayj[a|j[az_NaeWBj@ayfRayfQfQM{M|azj[azf6fQfQfQIpWXofj[ayj[j[fQayWCoeoeaya}j[ayfQa{oLj?j[WVj[ayayj[fQoff7azayj[ayj[j[ayofayayayj[fQj[ayayj[ayfjj[j[ayjuayj[";
@@ -19,7 +19,7 @@ const blurhash =
 const AudioPlayer = () => {
   // HOOKS
   const { top, bottom } = useSafeAreaInsets();
-  const { currentTrack } = useMusicStore();
+  const currentTrack = useActiveTrack();
 
   if (!currentTrack) {
     return (
@@ -50,25 +50,36 @@ const AudioPlayer = () => {
           >
             <Image
               style={styles.coverImage}
-              source={UnknownTrack}
+              source={currentTrack.artwork || UnknownTrack}
               placeholder={{ blurhash }}
               contentFit="cover"
               transition={1000}
             />
-            <ThemedText className="mt-3 text-center text-gray-400">
-              {/* {activeTrack.album} */}
+            <ThemedText
+              className="mt-3 text-center"
+              style={{
+                color: Colors.dark.muted,
+              }}
+            >
+              {currentTrack.album}
             </ThemedText>
 
             {/* Track Title */}
             <View
               style={styles.trackTitleContainer}
-              className="mx-auto space-x-5"
+              className="mx-auto space-x-2"
             >
               <Feather name="list" size={24} color={Colors.dark.foreground} />
-              <MovingText
-                text={"This is demo track title for long string testing"}
-                animationThreshold={30}
-              />
+              <View
+                style={{
+                  overflow: "hidden",
+                }}
+              >
+                <MovingText
+                  text={currentTrack.title as string}
+                  animationThreshold={30}
+                />
+              </View>
             </View>
 
             {/* Player Controls */}

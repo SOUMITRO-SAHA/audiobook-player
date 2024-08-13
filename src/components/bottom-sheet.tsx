@@ -6,12 +6,16 @@ import { BlurView } from "expo-blur";
 
 interface BottomSheetProps {
   children: React.ReactNode;
+  initialPosition?: number;
 }
 
 export const BottomSheet = forwardRef<BottomSheetModal, BottomSheetProps>(
-  ({ children }, ref) => {
+  ({ children, initialPosition = 30 }, ref) => {
     // Memoize snapPoints for better performance
-    const snapPoints = useMemo(() => ["30%", "50%"], []);
+    const snapPoints = useMemo(
+      () => [`${initialPosition}%`, "50%"],
+      [initialPosition]
+    );
 
     const blurBackdropComponent = () => {
       return (

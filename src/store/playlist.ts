@@ -4,14 +4,12 @@ import { create } from "zustand";
 type PlaylistStoreProps = {
   playlistName: string;
   coverImage: string;
-  track: Asset | null;
-  tracks: Asset[];
+  playbackSpeed: number;
+  setPlaybackSpeed: (value: number) => void;
   setPlaylistName: (name: string) => void;
   resetPlaylistName: () => void;
   setCoverImage: (image: string) => void;
   resetCoverImage: () => void;
-  addTrack: (track: Asset) => void;
-  resetTrack: () => void;
 };
 
 export const usePlaylistStore = create<PlaylistStoreProps>((set) => ({
@@ -19,6 +17,9 @@ export const usePlaylistStore = create<PlaylistStoreProps>((set) => ({
   coverImage: "",
   track: null,
   tracks: [],
+  playbackSpeed: 1,
+
+  setPlaybackSpeed: (value: number) => set({ playbackSpeed: value }),
   setPlaylistName: (name: string) => {
     set((state) => ({ ...state, playlistName: name }));
   },

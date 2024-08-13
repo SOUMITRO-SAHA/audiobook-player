@@ -6,19 +6,20 @@ import { ThemedView } from "../ThemedView";
 import { MovingText } from "./moving-text";
 import { PlayPauseButton, SkipToNextButton } from "./player-control";
 import { useMusicStore } from "@/store/playerStore";
+import { useActiveTrack } from "react-native-track-player";
 
 export type FloatingPlayerProps = {
   onNavigate: () => void;
 };
 
 export const FloatingPlayer = ({ onNavigate }: FloatingPlayerProps) => {
-  const { isPlaying, currentTrack } = useMusicStore();
+  const currentTrack = useActiveTrack();
 
   const handleButtonPress = () => {
     onNavigate?.();
   };
 
-  if (!isPlaying && !currentTrack) return null;
+  if (!currentTrack) return null;
 
   return (
     <View className="absolute p-2 px-5 rounded-xl" style={styles.container}>
