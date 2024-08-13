@@ -1,15 +1,14 @@
 import { Entypo, FontAwesome } from "@expo/vector-icons";
 import { Asset } from "expo-media-library";
-import { useRouter } from "expo-router";
 import { TouchableHighlight } from "react-native";
 
 import { Colors } from "@/constants";
 import { formatTime } from "@/lib/utils";
-import { usePlaylistStore } from "@/store";
+import { Track, useMusicStore } from "@/store/playerStore";
+import * as React from "react";
 import { MovingText } from "../player";
 import { ThemedText } from "../ThemedText";
 import { ThemedView } from "../ThemedView";
-import { Track, useMusicStore } from "@/store/playerStore";
 
 export const TrackListItem = ({
   track,
@@ -32,12 +31,22 @@ export const TrackListItem = ({
         uri: item.uri,
         id: item.id,
         title: item.filename,
-        artist: "Unknown",
       };
-
       setCurrentTrack(formattedTrack);
     }
   };
+
+  // Track Name
+  const trackName = React.useMemo(() => {
+    let name = "";
+
+    if (index) {
+      name += index;
+      name += ". ";
+    }
+    name += track.filename;
+    return name;
+  }, [track]);
 
   return (
     <TouchableHighlight
@@ -55,8 +64,7 @@ export const TrackListItem = ({
 
         <ThemedView className="bg-transparent">
           <ThemedView className="flex flex-row items-center space-x-1 overflow-hidden bg-transparent">
-            {index && <ThemedText>{index + 1}.</ThemedText>}
-            <MovingText text={track.filename} animationThreshold={10} />
+            <MovingText text={trackName} animationThreshold={30} />
           </ThemedView>
           <ThemedText className="mt-1 text-sm text-slate-400">
             {track.duration ? formatTime(Number(track.duration)) : ""}
