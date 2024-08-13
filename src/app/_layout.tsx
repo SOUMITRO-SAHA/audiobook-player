@@ -1,15 +1,3 @@
-import { AppWideSuspense } from "@/components";
-import ParallaxScrollView from "@/components/ParallaxScrollView";
-import { ThemedText } from "@/components/ThemedText";
-import { ThemedView } from "@/components/ThemedView";
-import { Colors, DEFAULT_DATABASE_NAME } from "@/constants";
-import { useColorScheme } from "@/hooks/useColorScheme";
-import migrations from "@/lib/db/drizzle/migrations";
-import {
-  GetPermissionStatus,
-  RequestForStoragePermissions,
-} from "@/lib/services/media-library";
-import { setupApplication } from "@/lib/services/setup";
 import { BottomSheetModalProvider } from "@gorhom/bottom-sheet";
 import { drizzle } from "drizzle-orm/expo-sqlite";
 import { useMigrations } from "drizzle-orm/expo-sqlite/migrator";
@@ -24,6 +12,25 @@ import { ActivityIndicator } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import "react-native-reanimated";
 import { RootSiblingParent } from "react-native-root-siblings";
+import TrackPlayer from "react-native-track-player";
+
+import { AppWideSuspense, ThemedScreen } from "@/components";
+import ParallaxScrollView from "@/components/ParallaxScrollView";
+import { ThemedText } from "@/components/ThemedText";
+import { ThemedView } from "@/components/ThemedView";
+import { Colors, DEFAULT_DATABASE_NAME } from "@/constants";
+import migrations from "@/lib/db/drizzle/migrations";
+import {
+  GetPermissionStatus,
+  RequestForStoragePermissions,
+} from "@/lib/services/media-library";
+import { setupApplication } from "@/lib/services/setup";
+import {
+  PlaybackService,
+  useLogTrackPlayerState,
+  useSetupTrackPlayer,
+} from "@/lib/services/track-player-service";
+import { useTrackPlayerStore } from "@/store";
 
 // Database Connector
 const expoDb = openDatabaseSync(DEFAULT_DATABASE_NAME);
@@ -33,6 +40,55 @@ const db = drizzle(expoDb);
 SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
+  // Store
+  const { isSetup, isTrackPlayerRegistered, setRegisterTrackPlayer } =
+    useTrackPlayerStore();
+
+  // Initialize the `React-Native-Track-Player`
+  const handleTrackPlayerLoaded = React.useCallback(() => {
+    SplashScreen.hideAsync();
+  }, []);
+
+  useSetupTrackPlayer({
+    onLoad: handleTrackPlayerLoaded,
+  });
+
+  // Register the Logs for `React-Native-Track-Player`
+  useLogTrackPlayerState();
+
+  // Side Effects
+  React.useEffect(() => {
+    (async () => {
+      try {
+        if (!isTrackPlayerRegistered) {
+          TrackPlayer.registerPlaybackService(() => PlaybackService);
+
+          // Updating the Status
+          setRegisterTrackPlayer(true);
+        }
+      } catch (error) {
+        console.log("Error registering Playback service: ", error);
+      }
+    })();
+  }, []);
+
+  // Renders
+  if (!isSetup) {
+    return (
+      <ThemedScreen>
+        <ActivityIndicator size="large" color={Colors.dark.primary} />
+      </ThemedScreen>
+    );
+  }
+
+  return (
+    <>
+      <App />
+    </>
+  );
+}
+
+function App() {
   const [loaded] = useFonts({
     SpaceMono: require("@/assets/fonts/SpaceMono-Regular.ttf"),
   });
@@ -42,11 +98,6 @@ export default function RootLayout() {
 
   // Initiate Drizzle Studio
   useDrizzleStudio(expoDb);
-
-  // Initialize the `React-Native-Track-Player`
-  const handleTrackPlayerLoaded = React.useCallback(() => {
-    SplashScreen.hideAsync();
-  }, []);
 
   // Side Effects
   React.useEffect(() => {
@@ -92,6 +143,7 @@ export default function RootLayout() {
       </ParallaxScrollView>
     );
   }
+
   if (!success) {
     return (
       <ThemedView>
