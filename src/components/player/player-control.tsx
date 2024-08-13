@@ -8,6 +8,8 @@ import { Slider } from "react-native-awesome-slider";
 import { TouchableOpacity } from "react-native-gesture-handler";
 import { useSharedValue } from "react-native-reanimated";
 import { ThemedText } from "../ThemedText";
+import { useMusicPlayer } from "@/hooks/useMusicPlayer";
+import { useMusicStore } from "@/store/playerStore";
 
 interface PlayerControlProps {
   style?: ViewStyle;
@@ -58,24 +60,26 @@ export const PlayPauseButton = ({
   style,
   className,
 }: PlayerControlButtonProps) => {
-  const playing = false; //TODO: useIsPlaying();
+  const { isPlaying, pauseMusic, playMusic } = useMusicStore();
+
+  console.log("In Side PlayPause Controller ===>", isPlaying);
 
   return (
     <View style={[style]} className={cn("", className)}>
       <TouchableOpacity
         activeOpacity={0.85}
         onPress={
-          playing
+          isPlaying
             ? async () => {
-                // await TrackPlayer.pause();
+                pauseMusic();
               }
             : async () => {
-                // await TrackPlayer.play();
+                playMusic();
               }
         }
       >
         <FontAwesome
-          name={playing ? "pause" : "play"}
+          name={true ? "pause" : "play"}
           size={size}
           color={Colors.dark.foreground}
         />
