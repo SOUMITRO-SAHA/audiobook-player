@@ -4,6 +4,7 @@ import PlayerFeatures from "@/components/player/player-features";
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
 import { Colors, screenPadding } from "@/constants";
+import { useMusicStore } from "@/store/playerStore";
 import { defaultStyles } from "@/styles";
 import { Feather } from "@expo/vector-icons";
 import { Image } from "expo-image";
@@ -18,12 +19,9 @@ const blurhash =
 const AudioPlayer = () => {
   // HOOKS
   const { top, bottom } = useSafeAreaInsets();
-  const activeTrack = null; // useActiveTrack();
-  // const { imageColors } = usePlayerBackground(
-  //   activeTrack?.artwork ?? UnknownTrack
-  // );
+  const { currentTrack } = useMusicStore();
 
-  if (!activeTrack) {
+  if (!currentTrack) {
     return (
       <View style={styles.overlayContainer}>
         <ThemedView className="flex flex-row items-center justify-center w-full h-full bg-transparent">
@@ -40,7 +38,7 @@ const AudioPlayer = () => {
     >
       <View style={styles.overlayContainer}>
         <DismissPlayerSymbol />
-        {activeTrack && (
+        {currentTrack && (
           <ThemedView
             className="relative"
             style={{
