@@ -65,3 +65,13 @@ export const history = sqliteTable("history", {
   createdAt: text("created_at").default(sql`CURRENT_TIMESTAMP`),
   updatedAt: text("updated_at").default(sql`CURRENT_TIMESTAMP`),
 });
+
+export const timestamp = sqliteTable("timestamp", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  timestamp: text("timestamp"),
+  title: text("title"),
+  trackUrl: text("track_url").notNull(),
+
+  createdAt: text("created_at").default(sql`CURRENT_TIMESTAMP`),
+  updatedAt: text("updated_at").default(sql`CURRENT_TIMESTAMP`),
+});
