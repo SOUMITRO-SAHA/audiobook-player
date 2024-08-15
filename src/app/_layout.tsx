@@ -76,9 +76,12 @@ export default function RootLayout() {
   }, []);
 
   React.useEffect(() => {
-    const handleDeepLink = (event: { url: string }) => {
+    const handleDeepLink = async (event: { url: string }) => {
       const { url } = event;
       if (url.includes("trackplayer://notification.click")) {
+        router.dismissAll(); // This will prevent `rntp` default navigation
+
+        // Navigate to the Player screen
         router.navigate({
           pathname: "player",
         });
