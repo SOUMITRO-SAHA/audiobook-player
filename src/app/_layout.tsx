@@ -3,12 +3,12 @@ import { drizzle } from "drizzle-orm/expo-sqlite";
 import { useMigrations } from "drizzle-orm/expo-sqlite/migrator";
 import { useDrizzleStudio } from "expo-drizzle-studio-plugin";
 import { useFonts } from "expo-font";
-import { Stack } from "expo-router";
+import { Stack, useRouter } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import { SQLiteProvider } from "expo-sqlite";
 import { openDatabaseSync } from "expo-sqlite/next";
 import * as React from "react";
-import { ActivityIndicator } from "react-native";
+import { ActivityIndicator, Linking } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import "react-native-reanimated";
 import { RootSiblingParent } from "react-native-root-siblings";
@@ -44,6 +44,9 @@ export default function RootLayout() {
   const { isSetup, isTrackPlayerRegistered, setRegisterTrackPlayer } =
     useTrackPlayerStore();
 
+  // Router
+  const router = useRouter();
+
   // Initialize the `React-Native-Track-Player`
   const handleTrackPlayerLoaded = React.useCallback(() => {
     SplashScreen.hideAsync();
@@ -71,6 +74,19 @@ export default function RootLayout() {
       }
     })();
   }, []);
+
+  React.useEffect(() => {
+    const handleDeepLink = (event: { url: string }) => {
+      const { url } = event;
+      if (url.includes("trackplayer://notification.click")) {
+        router.navigate({
+          pathname: "player",
+        });
+      }
+    };
+
+    Linking.addEventListener("url", handleDeepLink);
+  }, [router]);
 
   // Renders
   if (!isSetup) {
