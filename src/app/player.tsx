@@ -4,6 +4,7 @@ import PlayerFeatures from "@/components/player/player-features";
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
 import { Colors, screenPadding } from "@/constants";
+import { useBackgroundImageColor } from "@/hooks/useBackgroundImageColor";
 import { defaultStyles } from "@/styles";
 import { Feather } from "@expo/vector-icons";
 import { Image } from "expo-image";
@@ -12,6 +13,7 @@ import * as React from "react";
 import { ActivityIndicator, StyleSheet, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useActiveTrack, useIsPlaying } from "react-native-track-player";
+import musicDefaultImage from "@/assets/images/unknown_track.png";
 
 const blurhash =
   "|rF?hV%2WCj[ayj[a|j[az_NaeWBj@ayfRayfQfQM{M|azj[azf6fQfQfQIpWXofj[ayj[j[fQayWCoeoeaya}j[ayfQa{oLj?j[WVj[ayayj[fQoff7azayj[ayj[j[ayofayayayj[fQj[ayayj[ayfjj[j[ayjuayj[";
@@ -22,7 +24,11 @@ const AudioPlayer = () => {
   const currentTrack = useActiveTrack();
   const { playing } = useIsPlaying();
 
-  if (!currentTrack && !playing) {
+  const activeImageBackgroundColor = useBackgroundImageColor(
+    currentTrack ? currentTrack.artwork : musicDefaultImage
+  );
+
+  if (!currentTrack && !playing && !activeImageBackgroundColor) {
     return (
       <View style={styles.overlayContainer}>
         <ThemedView className="flex flex-row items-center justify-center w-full h-full bg-transparent">
@@ -32,10 +38,19 @@ const AudioPlayer = () => {
     );
   }
 
+  // Side Effect
+
   return (
     <LinearGradient
       style={{ flex: 1 }}
-      colors={[Colors.dark.primary, Colors.dark.destructive]}
+      colors={
+        activeImageBackgroundColor
+          ? [
+              activeImageBackgroundColor.primary,
+              activeImageBackgroundColor.secondary,
+            ]
+          : [Colors.dark.primary, Colors.dark.destructive]
+      }
     >
       <View style={styles.overlayContainer}>
         <DismissPlayerSymbol />
@@ -59,7 +74,7 @@ const AudioPlayer = () => {
             <ThemedText
               className="mt-3 text-center"
               style={{
-                color: Colors.dark.muted,
+                color: Colors.dark.mutedForeground,
               }}
             >
               {currentTrack.album}
