@@ -214,17 +214,15 @@ export const PlayerProgressBar = ({ style }: { style?: ViewStyle }) => {
   const isSliding = useSharedValue(false);
   const progress = useSharedValue(0);
   const min = useSharedValue(0);
-  const max = useSharedValue(0);
+  const max = useSharedValue(1);
 
   const trackElapsedTime = formatTime(position);
   const trackRemainingTime = formatTime(duration - position);
 
   // Side Effects
-  React.useEffect(() => {
-    if (!isSliding.value) {
-      progress.value = duration > 0 ? position / duration : 0;
-    }
-  }, [position, duration, isSliding]);
+  if (!isSliding.value) {
+    progress.value = duration > 0 ? position / duration : 0;
+  }
 
   return (
     <View style={[style]}>
@@ -236,11 +234,11 @@ export const PlayerProgressBar = ({ style }: { style?: ViewStyle }) => {
           containerStyle={utilsStyles.slider}
           thumbWidth={0}
           renderBubble={() => null}
-          onSlidingStart={() => (isSliding.value = true)}
           theme={{
             maximumTrackTintColor: colors.maximumTrackTintColor,
             minimumTrackTintColor: colors.minimumTrackTintColor,
           }}
+          onSlidingStart={() => (isSliding.value = true)}
           onValueChange={async (value) => {
             await TrackPlayer.seekTo(value * duration);
           }}
@@ -266,7 +264,9 @@ export const PlayerProgressBar = ({ style }: { style?: ViewStyle }) => {
           {duration > 0 ? formateDurationInText(duration) : ""} ({playbackSpeed}
           x)
         </ThemedText>
-        <ThemedText>{trackRemainingTime}</ThemedText>
+        <ThemedText>
+          {"-"} {trackRemainingTime}
+        </ThemedText>
       </View>
     </View>
   );

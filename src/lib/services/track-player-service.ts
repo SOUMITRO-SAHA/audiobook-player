@@ -13,7 +13,10 @@ import { usePlaylistStore, useTrackPlayerStore } from "@/store";
 
 const InitializePlaybackService = async () => {
   // Initializing the player
-  await TrackPlayer.setupPlayer();
+  await TrackPlayer.setupPlayer({
+    autoUpdateMetadata: true,
+    autoHandleInterruptions: true,
+  });
 
   // After Initiating the player
   await TrackPlayer.updateOptions({
@@ -34,8 +37,10 @@ const InitializePlaybackService = async () => {
       Capability.Pause,
       Capability.SkipToNext,
     ],
-    progressUpdateEventInterval: 2,
+    // progressUpdateEventInterval: 2,
   });
+
+  await TrackPlayer.setRepeatMode(RepeatMode.Queue);
 };
 
 export const useSetupTrackPlayer = ({ onLoad }: { onLoad?: () => void }) => {

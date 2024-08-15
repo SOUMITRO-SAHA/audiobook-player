@@ -11,7 +11,7 @@ import { LinearGradient } from "expo-linear-gradient";
 import * as React from "react";
 import { ActivityIndicator, StyleSheet, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import TrackPlayer, { Track, useActiveTrack } from "react-native-track-player";
+import { useActiveTrack, useIsPlaying } from "react-native-track-player";
 
 const blurhash =
   "|rF?hV%2WCj[ayj[a|j[az_NaeWBj@ayfRayfQfQM{M|azj[azf6fQfQfQIpWXofj[ayj[j[fQayWCoeoeaya}j[ayfQa{oLj?j[WVj[ayayj[fQoff7azayj[ayj[j[ayofayayayj[fQj[ayayj[ayfjj[j[ayjuayj[";
@@ -20,8 +20,9 @@ const AudioPlayer = () => {
   // HOOKS
   const { top, bottom } = useSafeAreaInsets();
   const currentTrack = useActiveTrack();
+  const { playing } = useIsPlaying();
 
-  if (!currentTrack) {
+  if (!currentTrack && !playing) {
     return (
       <View style={styles.overlayContainer}>
         <ThemedView className="flex flex-row items-center justify-center w-full h-full bg-transparent">
@@ -127,7 +128,7 @@ const styles = StyleSheet.create({
   overlayContainer: {
     ...defaultStyles.container,
     paddingHorizontal: screenPadding.horizontal,
-    backgroundColor: "rgba(255, 255, 255, 0.3)",
+    backgroundColor: "rgba(0, 0, 0, 0.009)",
     padding: 50,
   },
   coverImage: {
