@@ -1,7 +1,6 @@
 import { BottomSheetModalProvider } from "@gorhom/bottom-sheet";
 import { drizzle } from "drizzle-orm/expo-sqlite";
 import { useMigrations } from "drizzle-orm/expo-sqlite/migrator";
-import { useDrizzleStudio } from "expo-drizzle-studio-plugin";
 import { useFonts } from "expo-font";
 import { Stack, useRouter } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
@@ -83,7 +82,7 @@ export default function RootLayout() {
 
         // Navigate to the Player screen
         router.navigate({
-          pathname: "player",
+          pathname: "/player",
         });
       }
     };
@@ -114,9 +113,6 @@ function App() {
 
   // Drizzle
   const { success, error } = useMigrations(db, migrations);
-
-  // Initiate Drizzle Studio
-  useDrizzleStudio(expoDb);
 
   // Side Effects
   React.useEffect(() => {
