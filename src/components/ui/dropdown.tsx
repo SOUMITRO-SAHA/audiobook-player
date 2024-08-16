@@ -6,10 +6,16 @@ import ReactSelectDropdown from "react-native-select-dropdown";
 import { ThemedText } from "../ThemedText";
 import { ThemedView } from "../ThemedView";
 
+interface DropdownItem {
+  value: string;
+  label: string;
+  icon?: string;
+}
+
 interface SelectDropdownProps {
-  data: { title: string; icon?: string }[];
+  data: DropdownItem[];
   placeholder?: string;
-  state: string;
+  state: DropdownItem;
   setState: (value: string) => void;
 }
 
@@ -20,57 +26,59 @@ export const SelectDropdown: React.FC<SelectDropdownProps> = ({
   setState,
   ...props
 }) => {
+  // Find the currently selected item to display in the dropdown button
+  const selectedItem = data.find((item) => item.value === state.value);
+
   return (
-    <>
-      <ReactSelectDropdown
-        data={data}
-        defaultValue={state}
-        onSelect={(selectedItem, index) => {
-          setState(selectedItem);
-        }}
-        renderButton={(selectedItem, isOpened) => {
-          return (
-            <ThemedView style={styles.dropdownButtonStyle}>
-              {selectedItem && (
-                <MaterialIcons
-                  name={selectedItem.icon}
-                  style={styles.dropdownButtonIconStyle}
-                />
-              )}
-              <ThemedText style={styles.dropdownButtonTxtStyle}>
-                {(selectedItem && selectedItem.title) ||
-                  placeholder ||
-                  "Select your mood"}
-              </ThemedText>
-              <MaterialCommunityIcons
-                name={isOpened ? "chevron-up" : "chevron-down"}
-                style={styles.dropdownButtonArrowStyle}
+    <ReactSelectDropdown
+      data={data}
+      defaultValue={selectedItem}
+      onSelect={(selectedItem) => {
+        setState(selectedItem.value);
+      }}
+      renderButton={(selectedItem, isOpened) => {
+        return (
+          <ThemedView style={styles.dropdownButtonStyle}>
+            {selectedItem?.icon && (
+              <MaterialIcons
+                name={selectedItem.icon}
+                style={styles.dropdownButtonIconStyle}
               />
-            </ThemedView>
-          );
-        }}
-        renderItem={(item, index, isSelected) => {
-          return (
-            <ThemedView
-              style={{
-                ...styles.dropdownItemStyle,
-                ...(isSelected && { backgroundColor: "#D2D9DF" }),
-              }}
-            >
+            )}
+            <ThemedText style={styles.dropdownButtonTxtStyle}>
+              {selectedItem?.label || placeholder || "Select an option"}
+            </ThemedText>
+            <MaterialCommunityIcons
+              name={isOpened ? "chevron-up" : "chevron-down"}
+              style={styles.dropdownButtonArrowStyle}
+            />
+          </ThemedView>
+        );
+      }}
+      renderItem={(item, index, isSelected) => {
+        return (
+          <ThemedView
+            style={[
+              styles.dropdownItemStyle,
+              isSelected && { backgroundColor: "#D2D9DF" },
+            ]}
+          >
+            {item.icon && (
               <MaterialIcons
                 name={item.icon}
                 style={styles.dropdownItemIconStyle}
               />
-              <ThemedText style={styles.dropdownItemTxtStyle}>
-                {item.title}
-              </ThemedText>
-            </ThemedView>
-          );
-        }}
-        showsVerticalScrollIndicator={false}
-        dropdownStyle={styles.dropdownMenuStyle}
-      />
-    </>
+            )}
+            <ThemedText style={styles.dropdownItemTxtStyle}>
+              {item.label}
+            </ThemedText>
+          </ThemedView>
+        );
+      }}
+      showsVerticalScrollIndicator={false}
+      dropdownStyle={styles.dropdownMenuStyle}
+      {...props}
+    />
   );
 };
 

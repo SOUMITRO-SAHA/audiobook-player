@@ -27,7 +27,7 @@ import { ThemedView } from "../ThemedView";
 import { BottomSheet } from "../bottom-sheet";
 import { InputBox } from "../ui";
 
-const speedOptions = [0.5, 1, 1.25, 1.5, 1.75, 2, 2.5, 3];
+export const speedOptions = [0.5, 1, 1.25, 1.5, 1.75, 2, 2.5, 3];
 
 interface TimerOption {
   label: string;

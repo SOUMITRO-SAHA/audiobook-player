@@ -1,19 +1,22 @@
-import { ThemedScreen } from "@/components";
-import ParallaxScrollView from "@/components/ParallaxScrollView";
+import { eq } from "drizzle-orm";
+import React, { useEffect, useState } from "react";
+import { ToastAndroid, useColorScheme } from "react-native";
+import { TouchableOpacity } from "react-native-gesture-handler";
+
+import { ThemedButton, ThemedScreen } from "@/components";
+import { speedOptions } from "@/components/player/player-features";
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
 import { InputBox, SelectDropdown } from "@/components/ui";
 import { Colors } from "@/constants";
 import { db } from "@/lib/db";
-import { fetchAccount, fetchAllFolders } from "@/lib/db/query";
-import { account } from "@/lib/db/schema";
+import { fetchAccount } from "@/lib/db/query";
+import { account, playbackSettings } from "@/lib/db/schema";
 import { seedDefaultAccount } from "@/lib/db/seed";
-import { useAppStore } from "@/store";
+import { useAppStore, usePlaylistStore } from "@/store";
 import { Account, Folder } from "@/types/database";
-import { eq } from "drizzle-orm";
-import React, { useEffect, useState } from "react";
-import { Appearance, ToastAndroid, useColorScheme } from "react-native";
-import { TouchableOpacity } from "react-native-gesture-handler";
+import { retryAsyncOperation } from "@/lib/utils";
+import { router } from "expo-router";
 
 const initialFormData = {
   username: "",
@@ -24,10 +27,10 @@ const AccountScreen = () => {
   const [formData, setFormData] = useState(initialFormData);
   const [accountData, setAccountData] = useState<Account | null>(null);
   const [folders, setFolders] = useState<Folder[] | null>(null);
-  const [theme, setTheme] = useState("dark");
 
   // Store
   const { reLoadAccount } = useAppStore();
+  const { playbackSpeed, setPlaybackSpeed } = usePlaylistStore();
 
   // Theme
   const scheme = useColorScheme();
@@ -41,7 +44,6 @@ const AccountScreen = () => {
           .update(account)
           .set({
             username: formData.username,
-            theme: theme,
           })
           .where(eq(account.id, 1)); // Singleton Database
 
@@ -55,7 +57,6 @@ const AccountScreen = () => {
         // Insert
         const response = await db.insert(account).values({
           username: formData.username,
-          theme: theme,
         });
         if (response) {
           ToastAndroid.show("Account Created!!!", ToastAndroid.LONG);
@@ -66,6 +67,36 @@ const AccountScreen = () => {
       }
     } catch (error) {
       console.error(error);
+    }
+  };
+
+  const handlePlaybackSpeedUpdate = async (value: string) => {
+    setPlaybackSpeed(Number(value));
+
+    const dbUpdate = async () => {
+      try {
+        // Update the Playback Settings in the database
+        await db.update(playbackSettings).set({
+          speed: Number(value),
+        });
+
+        ToastAndroid.show(
+          "Playback Speed updated successfully",
+          ToastAndroid.SHORT
+        );
+      } catch (error) {
+        console.error(
+          "Failed to update playback speed in the database:",
+          error
+        );
+        throw error;
+      }
+    };
+
+    try {
+      await retryAsyncOperation(dbUpdate, 3);
+    } catch (error) {
+      console.error("Failed to update playback speed after retries:", error);
     }
   };
 
@@ -80,24 +111,11 @@ const AccountScreen = () => {
       }
     };
 
-    const getPermittedFolders = async () => {
-      const res = await fetchAllFolders();
-      if (res) setFolders(res);
+    const tx1 = setTimeout(getAccountInfo, 100);
+    return () => {
+      clearTimeout(tx1);
     };
-
-    getAccountInfo();
-    getPermittedFolders();
   }, []);
-
-  useEffect(() => {
-    if (scheme) setTheme(scheme);
-  }, [scheme]);
-
-  useEffect(() => {
-    if (formData.theme) {
-      Appearance.setColorScheme("dark");
-    }
-  }, [formData.theme]);
 
   useEffect(() => {
     if (accountData && accountData.username) {
@@ -128,22 +146,37 @@ const AccountScreen = () => {
         />
       </ThemedView>
 
-      {/* Permitted Folders */}
-      {folders && (
-        <ThemedView>
-          <ThemedText className="px-1 mb-2">Permitted Folders</ThemedText>
-          <ThemedView className="flex flex-row items-center space-x-2">
-            {folders &&
-              folders.map((folder) => (
-                <TouchableOpacity activeOpacity={0.85} key={folder.id}>
-                  <ThemedText className="items-center justify-center w-full p-2 px-3 text-sm bg-slate-700 rounded-xl">
-                    {folder?.name}
-                  </ThemedText>
-                </TouchableOpacity>
-              ))}
-          </ThemedView>
+      {/* Playback Speed */}
+      <ThemedView>
+        <ThemedText className="px-1 mb-2">Default Playback Speed</ThemedText>
+        <ThemedView className="flex flex-row items-center space-x-2">
+          <SelectDropdown
+            data={speedOptions?.map((s) => ({
+              value: String(s),
+              label: `${s}x`,
+            }))}
+            state={{ value: String(playbackSpeed), label: `${playbackSpeed}x` }}
+            setState={handlePlaybackSpeedUpdate}
+          />
         </ThemedView>
-      )}
+      </ThemedView>
+
+      {/* Wishlist */}
+      <ThemedView>
+        <ThemedButton
+          onPress={() => {
+            router.push({
+              pathname: "(wishlist)/wishlist",
+            });
+          }}
+          style={{
+            backgroundColor: Colors.dark.muted,
+            alignItems: "flex-start",
+          }}
+        >
+          <ThemedText className="text-start">Go to Wishlist</ThemedText>
+        </ThemedButton>
+      </ThemedView>
 
       <TouchableOpacity activeOpacity={0.8} onPress={handleAccountUpdate}>
         <ThemedView
