@@ -193,7 +193,12 @@ export const getFolderContentByFolderName = async (folderName: string) => {
         album: filteredContent[0],
       });
 
-      return { audios: files.assets, images: coverImages.assets };
+      // Sorting the Assets
+      const sortedAudios = files?.assets?.sort((a, b) => {
+        return a.filename.localeCompare(b.filename);
+      });
+
+      return { audios: sortedAudios, images: coverImages.assets };
     }
     return null;
   } catch (error) {

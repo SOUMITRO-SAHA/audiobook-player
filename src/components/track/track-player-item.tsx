@@ -5,16 +5,15 @@ import { TouchableHighlight } from "react-native";
 import { Colors } from "@/constants";
 import { addSingleTrack } from "@/lib/services/track-player-service";
 import { formatTime } from "@/lib/utils";
-import { useMusicStore } from "@/store/playerStore";
 import * as React from "react";
-import { MovingText } from "../player";
-import { ThemedText } from "../ThemedText";
-import { ThemedView } from "../ThemedView";
-import {
+import TrackPlayer, {
   State,
   useActiveTrack,
   usePlaybackState,
 } from "react-native-track-player";
+import { MovingText } from "../player";
+import { ThemedText } from "../ThemedText";
+import { ThemedView } from "../ThemedView";
 
 export const TrackListItem = ({
   track,
@@ -25,13 +24,23 @@ export const TrackListItem = ({
 }) => {
   const isActiveTrack = useActiveTrack()?.url === track.uri;
   const { state } = usePlaybackState();
+  const activeTrack = useActiveTrack();
 
   const handleTrackListItemPress = async (item: Asset) => {
     if (index) {
       // setCurrentPlaylistIndex(index);
       // TODO
     } else {
-      addSingleTrack(item);
+      // First Checking whether there is any active track
+      if (activeTrack && activeTrack?.url === track.uri) {
+        if (state && state === State.Playing) {
+          await TrackPlayer.pause();
+        } else {
+          await TrackPlayer.play();
+        }
+      } else {
+        addSingleTrack(item);
+      }
     }
   };
 
@@ -55,7 +64,11 @@ export const TrackListItem = ({
       <ThemedView className="flex flex-row items-center justify-between p-3 space-x-4 bg-slate-800 rounded-xl">
         <ThemedView className="flex items-center justify-center w-10 h-10 p-2 rounded-full">
           <FontAwesome
-            name={state === State.Playing ? "pause" : "play"}
+            name={
+              isActiveTrack && state && state === State.Playing
+                ? "pause"
+                : "play"
+            }
             size={16}
             color={Colors.dark.primary}
           />

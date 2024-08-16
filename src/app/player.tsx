@@ -14,6 +14,7 @@ import { ActivityIndicator, StyleSheet, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useActiveTrack, useIsPlaying } from "react-native-track-player";
 import musicDefaultImage from "@/assets/images/unknown_track.png";
+import { usePlaylistStore } from "@/store";
 
 const blurhash =
   "|rF?hV%2WCj[ayj[a|j[az_NaeWBj@ayfRayfQfQM{M|azj[azf6fQfQfQIpWXofj[ayj[j[fQayWCoeoeaya}j[ayfQa{oLj?j[WVj[ayayj[fQoff7azayj[ayj[j[ayofayayayj[fQj[ayayj[ayfjj[j[ayjuayj[";
@@ -24,11 +25,12 @@ const AudioPlayer = () => {
   const currentTrack = useActiveTrack();
   const { playing } = useIsPlaying();
 
+  // Background Color
   const activeImageBackgroundColor = useBackgroundImageColor(
     currentTrack ? currentTrack.artwork : musicDefaultImage
   );
 
-  if (!currentTrack && !playing && !activeImageBackgroundColor) {
+  if ((!currentTrack && !playing) || !activeImageBackgroundColor) {
     return (
       <View style={styles.overlayContainer}>
         <ThemedView className="flex flex-row items-center justify-center w-full h-full bg-transparent">

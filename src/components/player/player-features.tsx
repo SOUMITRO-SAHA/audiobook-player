@@ -1,4 +1,5 @@
 import { Colors } from "@/constants";
+import { useSleepTimer } from "@/hooks/useSleepTimer";
 import { db } from "@/lib/db";
 import { playbackSettings, timestamp } from "@/lib/db/schema";
 import { formatTime } from "@/lib/utils";
@@ -25,7 +26,6 @@ import { ThemedText } from "../ThemedText";
 import { ThemedView } from "../ThemedView";
 import { BottomSheet } from "../bottom-sheet";
 import { InputBox } from "../ui";
-import { useDelayedTask } from "@/hooks/useDelayedTask";
 
 const speedOptions = [0.5, 1, 1.25, 1.5, 1.75, 2, 2.5, 3];
 
@@ -35,19 +35,15 @@ interface TimerOption {
 }
 
 const timerOptions = [
-  { label: "30 mins", value: 30 * 60 * 1000 },
-  { label: "45 mins", value: 45 * 60 * 1000 },
-  { label: "60 mins", value: 60 * 60 * 1000 },
-  { label: "1h30m", value: 90 * 60 * 1000 },
-  { label: "2hr", value: 120 * 60 * 1000 },
+  { label: "1 mins", value: 1 },
+  { label: "30 mins", value: 30 },
+  { label: "45 mins", value: 45 },
+  { label: "60 mins", value: 60 },
+  { label: "1h30m", value: 90 },
+  { label: "2hr", value: 120 },
   { label: "End of this Chapter", value: null },
   // Add "End Of Chapter" logic here
 ];
-
-const stopPlayingMusic = async () => {
-  console.log("I have been called");
-  await TrackPlayer.pause();
-};
 
 const PlayerFeatures = () => {
   // Hooks
@@ -70,17 +66,18 @@ const PlayerFeatures = () => {
   const [timeStampLoading, setTimeStampLoading] = React.useState(false);
   const speedRef = React.useRef<BottomSheetModal>(null);
 
+  // Hooks
+  const { startTimer, cancelTimer } = useSleepTimer();
+
   const handleTimerSelect = (time: number | null) => {
     if (time === null) {
       // End of this chapter logic
     } else {
-      setTimer(time);
+      startTimer(time);
       ToastAndroid.show("Timer set for " + time, ToastAndroid.LONG);
       timerRef.current?.close();
     }
   };
-
-  // TODO: useDelayedTask(timer, stopPlayingMusic);
 
   // Functions
   const handleSpeedChange = React.useCallback(async (speed: number) => {

@@ -1,6 +1,5 @@
 import musicDefaultImage from "@/assets/images/music-note.png";
 import { ThemedScreen } from "@/components";
-import ParallaxScrollView from "@/components/ParallaxScrollView";
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
 import { TrackList } from "@/components/track";
@@ -12,11 +11,10 @@ import { usePlaylistStore } from "@/store";
 import { AntDesign } from "@expo/vector-icons";
 import { Image } from "expo-image";
 import { Asset } from "expo-media-library";
-import { useLocalSearchParams, useNavigation, useRouter } from "expo-router";
+import { useLocalSearchParams, useNavigation } from "expo-router";
 import * as React from "react";
 import { ActivityIndicator, StyleSheet, ToastAndroid } from "react-native";
 import { TouchableOpacity } from "react-native-gesture-handler";
-import TrackPlayer from "react-native-track-player";
 
 const LibraryContentScreen = () => {
   const { name } = useLocalSearchParams();
@@ -27,10 +25,8 @@ const LibraryContentScreen = () => {
   const [allFiles, setAllFiles] = React.useState<Asset[] | null>(null);
 
   // Store
-  const { setCoverImage, coverImage, setPlaylistName } = usePlaylistStore();
-
-  // Router
-  const router = useRouter();
+  const { setCoverImage, coverImage, playlist, setPlaylistName } =
+    usePlaylistStore();
 
   // Function
   const handleRefreshContent = React.useCallback(async () => {
@@ -65,18 +61,15 @@ const LibraryContentScreen = () => {
   }, [name, initialLoading]);
 
   const handleAddingPlaylist = React.useCallback(async () => {
-    // First Clearing all the tracks that might be in the playlist
-    await TrackPlayer.reset();
-
     // Now adding all files to the playlist
-    if (allFiles) {
+    if (allFiles && allFiles.length > 0) {
       addTracks(allFiles);
       return;
     } else {
-      ToastAndroid.show("Playlist is empty", ToastAndroid.CENTER);
+      ToastAndroid.show("Playlist is empty", ToastAndroid.SHORT);
       return;
     }
-  }, []);
+  }, [allFiles]);
 
   // Side Effects
   React.useEffect(() => {

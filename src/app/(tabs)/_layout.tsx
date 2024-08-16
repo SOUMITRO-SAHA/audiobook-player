@@ -1,6 +1,5 @@
 import { FloatingPlayer } from "@/components/player";
 import { Colors, fontSize } from "@/constants";
-import { useColorScheme } from "@/hooks/useColorScheme";
 import { AntDesign } from "@expo/vector-icons";
 import Entypo from "@expo/vector-icons/Entypo";
 import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
@@ -18,6 +17,7 @@ export default function TabLayout() {
       pathname: "player",
     });
   };
+
   return (
     <SafeAreaProvider
       style={{
@@ -68,11 +68,11 @@ export default function TabLayout() {
           }}
         />
         <Tabs.Screen
-          name="search"
+          name="(wishlist)"
           options={{
-            title: "Search",
+            title: "Wishlist",
             tabBarIcon: ({ color }) => (
-              <AntDesign name="search1" color={color} size={28} />
+              <AntDesign name="hearto" color={color} size={24} />
             ),
           }}
         />

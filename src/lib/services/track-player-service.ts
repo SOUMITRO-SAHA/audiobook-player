@@ -6,6 +6,8 @@ import TrackPlayer, {
   Event,
   RepeatMode,
   Track,
+  useActiveTrack,
+  useIsPlaying,
   useTrackPlayerEvents,
 } from "react-native-track-player";
 
@@ -113,53 +115,58 @@ export const useLogTrackPlayerState = () => {
   });
 };
 
-export async function addSingleTrack(track: Asset) {
-  // Store
-  const { coverImage } = usePlaylistStore.getState();
+// Helper function to create a Track object from an Asset
+export const formTrackFromAsset = (
+  asset: Asset,
+  coverImage?: string,
+  albumName?: string
+): Track => ({
+  id: asset.id,
+  url: asset.uri,
+  title: asset.filename,
+  duration: asset.duration,
+  artist: "Unknown", // Default artist
+  album: albumName || asset.filename,
+  artwork: coverImage || undefined, // Use coverImage if available
+});
 
-  const currentTrack: Track = {
-    url: track.uri,
-    title: track.filename,
-    duration: track.duration,
-    artist: "Unknown",
-    album: track.filename,
-    id: track.id,
-  };
+// Adds a single track and plays it
+export const addSingleTrack = async (asset: Asset) => {
+  try {
+    const { coverImage } = usePlaylistStore.getState();
+    const track = formTrackFromAsset(asset, coverImage);
 
-  if (coverImage) {
-    currentTrack.artwork = coverImage;
+    await TrackPlayer.reset(); // Ensures there's no other track playing
+    await TrackPlayer.add([track]);
+    await TrackPlayer.setRepeatMode(RepeatMode.Queue);
+    await TrackPlayer.play();
+  } catch (error) {
+    console.error("Failed to add and play track:", error);
   }
+};
 
-  await TrackPlayer.load(currentTrack);
-  await TrackPlayer.setRepeatMode(RepeatMode.Queue);
-  await TrackPlayer.play();
-}
+// Adds multiple tracks to the playlist and plays them
+export const addTracks = async (assets: Asset[]) => {
+  try {
+    const { coverImage, setPlaylist, playlistName } =
+      usePlaylistStore.getState();
 
-export async function addTracks(tracks: Asset[]) {
-  // Store
-  const { coverImage } = usePlaylistStore.getState();
+    const tracks = assets.map((asset) =>
+      formTrackFromAsset(asset, coverImage, playlistName)
+    );
 
-  const allTracks = tracks.map((track) => {
-    const currentTrack: Track = {
-      url: track.uri,
-      title: track.filename,
-      duration: track.duration,
-      artist: "Unknown",
-      album: track.filename,
-      id: track.id,
-    };
+    // Setting the playlist in the store
+    setPlaylist(tracks);
 
-    if (coverImage) {
-      currentTrack.artwork = coverImage;
-    }
-
-    return currentTrack;
-  });
-
-  await TrackPlayer.add(allTracks);
-  await TrackPlayer.setRepeatMode(RepeatMode.Queue);
-  await TrackPlayer.play();
-}
+    // Resetting and adding the new tracks to TrackPlayer
+    await TrackPlayer.reset();
+    await TrackPlayer.add(tracks);
+    await TrackPlayer.setRepeatMode(RepeatMode.Queue);
+    await TrackPlayer.play();
+  } catch (error) {
+    console.error("Failed to add and play tracks:", error);
+  }
+};
 
 export const PlaybackService = async () => {
   TrackPlayer.addEventListener(Event.RemotePlay, async () => {

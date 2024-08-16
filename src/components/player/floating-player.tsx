@@ -2,11 +2,10 @@ import { Colors } from "@/constants";
 import { SimpleLineIcons } from "@expo/vector-icons";
 import * as React from "react";
 import { StyleSheet, TouchableOpacity, View } from "react-native";
+import { useActiveTrack } from "react-native-track-player";
 import { ThemedView } from "../ThemedView";
 import { MovingText } from "./moving-text";
 import { PlayPauseButton, SkipToNextButton } from "./player-control";
-import { useMusicStore } from "@/store/playerStore";
-import { useActiveTrack } from "react-native-track-player";
 
 export type FloatingPlayerProps = {
   onNavigate: () => void;

@@ -24,7 +24,8 @@ export default function LibraryScreen() {
   const { isLibraryLoading, setLibraryLoading, resetLibraryLoading } =
     useAppStore();
 
-  const { resetPlaylistName, resetCoverImage } = usePlaylistStore();
+  const { resetPlaylistName, resetCoverImage, resetPlaylist } =
+    usePlaylistStore();
 
   const handleRefresh = async () => {
     try {
@@ -64,6 +65,7 @@ export default function LibraryScreen() {
         // Also Updating the Store
         resetPlaylistName();
         resetCoverImage();
+        resetPlaylist();
       } catch (error) {
         console.error("Error reading default directory:", error);
       } finally {
@@ -71,6 +73,14 @@ export default function LibraryScreen() {
       }
     })();
   }, [refreshing]);
+
+  React.useEffect(() => {
+    (() => {
+      resetCoverImage();
+      resetPlaylistName();
+      resetPlaylist();
+    })();
+  }, []);
 
   // Render Components
   const renderLoadingCard = () => {

@@ -1,6 +1,6 @@
-import React from "react";
+import React, { useState } from "react";
 import { ThemedView } from "../ThemedView";
-import { TextInput } from "react-native";
+import { TextInput, StyleSheet } from "react-native";
 import { AntDesign } from "@expo/vector-icons";
 import { Colors } from "@/constants";
 import { cn } from "@/lib/utils";
@@ -8,14 +8,38 @@ import { cn } from "@/lib/utils";
 interface SearchBoxProps {
   text: string;
   onChangeText?: (text: string) => void;
+  onSearch?: (text: string) => void;
 }
 
-export const SearchBox: React.FC<SearchBoxProps> = (props) => {
+export const SearchBox: React.FC<SearchBoxProps> = ({
+  text,
+  onChangeText,
+  onSearch,
+}) => {
+  const [inputText, setInputText] = useState(text);
+
+  const handleSubmitEditing = () => {
+    if (onSearch) {
+      onSearch(inputText);
+    }
+  };
+
   return (
-    <ThemedView className="flex-row space-x-3 border w-full bg-slate-700/80 p-2 px-3 rounded-xl justify-center items-center blur-2xl">
+    <ThemedView className="flex-row items-center justify-center w-full p-1 px-3 pr-1 space-x-3 border bg-slate-500/30 rounded-xl blur-2xl">
       <AntDesign name="search1" size={24} color={Colors.dark.primary} />
       <TextInput
-        className={cn("h-11 text-white w-[90%] dark:bg-slate-900 rounded px-2")}
+        className={cn(
+          "h-9 text-white w-[90%] dark:bg-slate-950 rounded-r-xl px-2"
+        )}
+        value={inputText}
+        onChangeText={(text) => {
+          setInputText(text);
+          if (onChangeText) {
+            onChangeText(text);
+          }
+        }}
+        onSubmitEditing={handleSubmitEditing}
+        returnKeyType="search" // Shows a "search" button on the keyboard
       />
     </ThemedView>
   );

@@ -26,3 +26,6 @@ expo-env.d.ts
 
 # Dev
 /.vscode
+
+# TODO
+TODO.md

@@ -10,6 +10,18 @@ const WishListScreenLayout = () => {
           headerShown: false,
         }}
       />
+      <Stack.Screen
+        name="[param]"
+        options={{
+          headerShown: false,
+        }}
+      />
+      <Stack.Screen
+        name="wishlist"
+        options={{
+          headerShown: false,
+        }}
+      />
     </Stack>
   );
 };

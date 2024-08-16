@@ -30,6 +30,7 @@ import {
   useSetupTrackPlayer,
 } from "@/lib/services/track-player-service";
 import { useTrackPlayerStore } from "@/store";
+import AppContextProvider from "@/context/AppContext";
 
 // Database Connector
 const expoDb = openDatabaseSync(DEFAULT_DATABASE_NAME);
@@ -78,11 +79,11 @@ export default function RootLayout() {
     const handleDeepLink = async (event: { url: string }) => {
       const { url } = event;
       if (url.includes("trackplayer://notification.click")) {
-        router.dismissAll(); // This will prevent `rntp` default navigation
+        // router.dismissAll(); // This will prevent `rntp` default navigation
 
         // Navigate to the Player screen
         router.navigate({
-          pathname: "/player",
+          pathname: "player",
         });
       }
     };
@@ -169,29 +170,34 @@ function App() {
 
   return (
     <RootSiblingParent>
-      <GestureHandlerRootView style={{ flex: 1 }}>
-        <BottomSheetModalProvider>
-          <React.Suspense fallback={<AppWideSuspense />}>
-            <SQLiteProvider useSuspense databaseName={DEFAULT_DATABASE_NAME}>
-              <Stack>
-                <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-                <Stack.Screen name="+not-found" />
+      <AppContextProvider>
+        <GestureHandlerRootView style={{ flex: 1 }}>
+          <BottomSheetModalProvider>
+            <React.Suspense fallback={<AppWideSuspense />}>
+              <SQLiteProvider useSuspense databaseName={DEFAULT_DATABASE_NAME}>
+                <Stack>
+                  <Stack.Screen
+                    name="(tabs)"
+                    options={{ headerShown: false }}
+                  />
+                  <Stack.Screen name="+not-found" />
 
-                <Stack.Screen
-                  name="player"
-                  options={{
-                    presentation: "card",
-                    gestureEnabled: true,
-                    gestureDirection: "vertical",
-                    animationDuration: 400,
-                    headerShown: false,
-                  }}
-                />
-              </Stack>
-            </SQLiteProvider>
-          </React.Suspense>
-        </BottomSheetModalProvider>
-      </GestureHandlerRootView>
+                  <Stack.Screen
+                    name="player"
+                    options={{
+                      presentation: "card",
+                      gestureEnabled: true,
+                      gestureDirection: "vertical",
+                      animationDuration: 400,
+                      headerShown: false,
+                    }}
+                  />
+                </Stack>
+              </SQLiteProvider>
+            </React.Suspense>
+          </BottomSheetModalProvider>
+        </GestureHandlerRootView>
+      </AppContextProvider>
     </RootSiblingParent>
   );
 }
