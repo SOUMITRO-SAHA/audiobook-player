@@ -6,8 +6,6 @@ import TrackPlayer, {
   Event,
   RepeatMode,
   Track,
-  useActiveTrack,
-  useIsPlaying,
   useTrackPlayerEvents,
 } from "react-native-track-player";
 
@@ -127,7 +125,7 @@ export const formTrackFromAsset = (
   duration: asset.duration,
   artist: "Unknown", // Default artist
   album: albumName || asset.filename,
-  artwork: coverImage || undefined, // Use coverImage if available
+  artwork: coverImage || undefined,
 });
 
 // Adds a single track and plays it

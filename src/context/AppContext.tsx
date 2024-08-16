@@ -22,7 +22,7 @@ interface AppContextProps {
   searchBooks: (bookName: string) => Promise<void>;
   getTrendingBooks: () => Promise<void>;
   getBookById: (bookId: string) => Book | undefined;
-  getCoverImage: (bookId: string) => string | undefined;
+  getBookInfo: (bookName: string) => Promise<Book[] | undefined>;
   searchedBooks: Book[];
   trendingBooks: Book[];
 }
@@ -30,7 +30,7 @@ interface AppContextProps {
 const initialState: AppContextProps = {
   searchBooks: async () => Promise.resolve(),
   getTrendingBooks: async () => Promise.resolve(),
-  getCoverImage: () => undefined,
+  getBookInfo: () => Promise.resolve(undefined),
   getBookById: () => undefined,
   searchedBooks: [],
   trendingBooks: [],
@@ -137,13 +137,31 @@ const AppContextProvider = ({ children }: { children: React.ReactNode }) => {
     }
   }, [trendingBooksTopic, transformBookData]);
 
-  const getCoverImage = useCallback(
-    (bookId: string): string | undefined => {
-      const allBooks = [...searchedBooks, ...trendingBooks];
-      const book = allBooks.find((b) => b.id === bookId);
-      return book?.coverImage;
+  const getBookInfo = useCallback(
+    async (bookName?: string): Promise<Book[] | undefined> => {
+      try {
+        const response = await axios.get(GOOGLE_BOOK_API_URL, {
+          params: {
+            q: bookName,
+            orderBy: "relevance",
+          },
+        });
+
+        const { items } = response.data;
+        if (items) {
+          const transformedBooks = transformBookData(items);
+          const filteredBooks = transformedBooks.filter(
+            (book) => book.coverImage
+          );
+
+          return filteredBooks;
+        }
+        return undefined;
+      } catch (error) {
+        console.error("Error searching books:", error);
+      }
     },
-    [searchedBooks, trendingBooks]
+    [transformBookData]
   );
 
   const getBookById = useCallback(
@@ -162,7 +180,7 @@ const AppContextProvider = ({ children }: { children: React.ReactNode }) => {
     () => ({
       searchBooks,
       getTrendingBooks,
-      getCoverImage,
+      getBookInfo,
       getBookById,
       searchedBooks,
       trendingBooks,
@@ -170,7 +188,7 @@ const AppContextProvider = ({ children }: { children: React.ReactNode }) => {
     [
       searchBooks,
       getTrendingBooks,
-      getCoverImage,
+      getBookInfo,
       getBookById,
       searchedBooks,
       trendingBooks,

@@ -1,9 +1,13 @@
-import UnknownTrack from "@/assets/images/unknown_track.png";
+import {
+  default as musicDefaultImage,
+  default as UnknownTrack,
+} from "@/assets/images/unknown_track.png";
 import { MovingText, PlayerControls } from "@/components/player";
 import PlayerFeatures from "@/components/player/player-features";
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
 import { Colors, screenPadding } from "@/constants";
+import { useAppContext } from "@/context/AppContext";
 import { useBackgroundImageColor } from "@/hooks/useBackgroundImageColor";
 import { defaultStyles } from "@/styles";
 import { Feather } from "@expo/vector-icons";
@@ -12,9 +16,10 @@ import { LinearGradient } from "expo-linear-gradient";
 import * as React from "react";
 import { ActivityIndicator, StyleSheet, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { useActiveTrack, useIsPlaying } from "react-native-track-player";
-import musicDefaultImage from "@/assets/images/unknown_track.png";
-import { usePlaylistStore } from "@/store";
+import TrackPlayer, {
+  useActiveTrack,
+  useIsPlaying,
+} from "react-native-track-player";
 
 const blurhash =
   "|rF?hV%2WCj[ayj[a|j[az_NaeWBj@ayfRayfQfQM{M|azj[azf6fQfQfQIpWXofj[ayj[j[fQayWCoeoeaya}j[ayfQa{oLj?j[WVj[ayayj[fQoff7azayj[ayj[j[ayofayayayj[fQj[ayayj[ayfjj[j[ayjuayj[";
@@ -24,11 +29,42 @@ const AudioPlayer = () => {
   const { top, bottom } = useSafeAreaInsets();
   const currentTrack = useActiveTrack();
   const { playing } = useIsPlaying();
+  const [coverImage, setCoverImage] = React.useState<string>(musicDefaultImage);
+  const [artists, setArtists] = React.useState<string[] | null>(null);
+  const [albumName, setAlbumName] = React.useState<string | null>(null);
+
+  const { getBookInfo } = useAppContext();
+
+  // Memoization
+  React.useEffect(() => {
+    const fetchBookInfo = async () => {
+      if (currentTrack) {
+        try {
+          const bookInfo = await getBookInfo(currentTrack.title as string);
+
+          if (currentTrack.artwork) {
+            setCoverImage(currentTrack.artwork);
+          } else if (bookInfo && bookInfo.length > 0) {
+            const relevantInfo = bookInfo.find(
+              (info) => !info?.authors?.includes("Unknown")
+            );
+            if (relevantInfo) {
+              setCoverImage(relevantInfo.coverImage);
+              setArtists(relevantInfo.authors);
+              setAlbumName(relevantInfo.title);
+            }
+          }
+        } catch (error) {
+          console.error("Error fetching book info:", error);
+        }
+      }
+    };
+
+    fetchBookInfo();
+  }, [currentTrack, getBookInfo]);
 
   // Background Color
-  const activeImageBackgroundColor = useBackgroundImageColor(
-    currentTrack ? currentTrack.artwork : musicDefaultImage
-  );
+  const activeImageBackgroundColor = useBackgroundImageColor(coverImage);
 
   if ((!currentTrack && !playing) || !activeImageBackgroundColor) {
     return (
@@ -39,8 +75,6 @@ const AudioPlayer = () => {
       </View>
     );
   }
-
-  // Side Effect
 
   return (
     <LinearGradient
@@ -68,7 +102,13 @@ const AudioPlayer = () => {
           >
             <Image
               style={styles.coverImage}
-              source={currentTrack.artwork || UnknownTrack}
+              source={
+                currentTrack && currentTrack.artwork
+                  ? currentTrack.artwork
+                  : coverImage
+                  ? coverImage
+                  : UnknownTrack
+              }
               placeholder={{ blurhash }}
               contentFit="cover"
               transition={1000}
@@ -79,7 +119,8 @@ const AudioPlayer = () => {
                 color: Colors.dark.mutedForeground,
               }}
             >
-              {currentTrack.album}
+              {albumName}
+              {artists && ` | ${artists?.join(", ")}`}
             </ThemedText>
 
             {/* Track Title */}
