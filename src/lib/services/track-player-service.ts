@@ -10,6 +10,7 @@ import TrackPlayer, {
 } from "react-native-track-player";
 
 import { usePlaylistStore, useTrackPlayerStore } from "@/store";
+import { extractLocalUrl } from "../utils";
 
 const InitializePlaybackService = async () => {
   // Initializing the player
@@ -132,7 +133,11 @@ export const formTrackFromAsset = (
 export const addSingleTrack = async (asset: Asset) => {
   try {
     const { coverImage } = usePlaylistStore.getState();
-    const track = formTrackFromAsset(asset, coverImage);
+    const fileLocalUrl = extractLocalUrl(asset.uri);
+    const track = formTrackFromAsset(
+      { ...asset, uri: fileLocalUrl || asset.uri },
+      coverImage
+    );
 
     await TrackPlayer.reset(); // Ensures there's no other track playing
     await TrackPlayer.add([track]);
@@ -149,9 +154,15 @@ export const addTracks = async (assets: Asset[]) => {
     const { coverImage, setPlaylist, playlistName } =
       usePlaylistStore.getState();
 
-    const tracks = assets.map((asset) =>
-      formTrackFromAsset(asset, coverImage, playlistName)
-    );
+    const tracks = assets.map((asset) => {
+      const fileLocalUrl = extractLocalUrl(asset.uri);
+
+      return formTrackFromAsset(
+        { ...asset, uri: fileLocalUrl || asset.uri },
+        coverImage,
+        playlistName
+      );
+    });
 
     // Setting the playlist in the store
     setPlaylist(tracks);
