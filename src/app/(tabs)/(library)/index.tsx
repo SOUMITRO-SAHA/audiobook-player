@@ -63,9 +63,7 @@ export default function LibraryScreen() {
         }
 
         // Also Updating the Store
-        resetPlaylistName();
         resetCoverImage();
-        resetPlaylist();
       } catch (error) {
         console.error("Error reading default directory:", error);
       } finally {
@@ -77,8 +75,6 @@ export default function LibraryScreen() {
   React.useEffect(() => {
     (() => {
       resetCoverImage();
-      resetPlaylistName();
-      resetPlaylist();
     })();
   }, []);
 

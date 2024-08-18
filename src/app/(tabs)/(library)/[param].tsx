@@ -32,6 +32,7 @@ const LibraryContentScreen = () => {
   const handleRefreshContent = React.useCallback(async () => {
     if (name && typeof name === "string") {
       try {
+        let coverImageUrl;
         const tracks = await getFolderContentByFolderName(name);
 
         // Setting the Folders
@@ -44,9 +45,9 @@ const LibraryContentScreen = () => {
           // Setting the First Image as Cover Image
           const firstImage = tracks.images[0];
           if (firstImage) {
-            const uri = extractLocalUrl(firstImage.uri);
-            if (uri) {
-              setCoverImage(uri);
+            coverImageUrl = extractLocalUrl(firstImage.uri);
+            if (coverImageUrl) {
+              setCoverImage(coverImageUrl);
             }
           }
         }
@@ -145,7 +146,6 @@ const LibraryContentScreen = () => {
           </ThemedView>
 
           {/* Audio Files */}
-
           {allFiles && (
             <TrackList
               trackList={allFiles}

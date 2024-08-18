@@ -1,0 +1,2 @@
+CREATE UNIQUE INDEX `playlist_track_playlist_id_unique` ON `playlist_track` (`playlist_id`);--> statement-breakpoint
+CREATE UNIQUE INDEX `playlist_track_track_id_unique` ON `playlist_track` (`track_id`);

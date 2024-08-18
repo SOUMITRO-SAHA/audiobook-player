@@ -18,6 +18,7 @@ import ParallaxScrollView from "@/components/ParallaxScrollView";
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
 import { Colors, DEFAULT_DATABASE_NAME } from "@/constants";
+import AppContextProvider from "@/context/AppContext";
 import migrations from "@/lib/db/drizzle/migrations";
 import {
   GetPermissionStatus,
@@ -30,7 +31,7 @@ import {
   useSetupTrackPlayer,
 } from "@/lib/services/track-player-service";
 import { useTrackPlayerStore } from "@/store";
-import AppContextProvider from "@/context/AppContext";
+import useLoadLastPlayTrack from "@/hooks/useLoadLastPlayTrack";
 
 // Database Connector
 const expoDb = openDatabaseSync(DEFAULT_DATABASE_NAME);
@@ -114,6 +115,9 @@ function App() {
 
   // Drizzle
   const { success, error } = useMigrations(db, migrations);
+
+  // Initiate the loadLastPlayed Tracks
+  useLoadLastPlayTrack();
 
   // Side Effects
   React.useEffect(() => {

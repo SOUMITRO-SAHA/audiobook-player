@@ -16,10 +16,7 @@ import { LinearGradient } from "expo-linear-gradient";
 import * as React from "react";
 import { ActivityIndicator, StyleSheet, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import TrackPlayer, {
-  useActiveTrack,
-  useIsPlaying,
-} from "react-native-track-player";
+import { useActiveTrack, useIsPlaying } from "react-native-track-player";
 
 const blurhash =
   "|rF?hV%2WCj[ayj[a|j[az_NaeWBj@ayfRayfQfQM{M|azj[azf6fQfQfQIpWXofj[ayj[j[fQayWCoeoeaya}j[ayfQa{oLj?j[WVj[ayayj[fQoff7azayj[ayj[j[ayofayayayj[fQj[ayayj[ayfjj[j[ayjuayj[";
@@ -37,6 +34,7 @@ const AudioPlayer = () => {
 
   // Memoization
   React.useEffect(() => {
+    // TODO: First Update the Database with the following Information | then first check in the database if the info preset or not if present then do not call the apis, and if not present then call the apis
     const fetchBookInfo = async () => {
       if (currentTrack) {
         try {
@@ -61,7 +59,7 @@ const AudioPlayer = () => {
     };
 
     fetchBookInfo();
-  }, [currentTrack, getBookInfo]);
+  }, [currentTrack]);
 
   // Background Color
   const activeImageBackgroundColor = useBackgroundImageColor(coverImage);
@@ -87,6 +85,7 @@ const AudioPlayer = () => {
             ]
           : [Colors.dark.primary, Colors.dark.destructive]
       }
+      start={{ x: 0, y: 0.1 }}
     >
       <View style={styles.overlayContainer}>
         <DismissPlayerSymbol />

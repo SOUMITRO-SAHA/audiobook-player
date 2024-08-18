@@ -46,10 +46,12 @@ export const playlistTrack = sqliteTable("playlist_track", {
   id: integer("id").primaryKey({ autoIncrement: true }),
   playlistId: integer("playlist_id")
     .notNull()
-    .references(() => playlist.id), // Referencing the 'id' column of 'playlist' table
+    .references(() => playlist.id)
+    .unique(),
   trackId: integer("track_id")
     .notNull()
-    .references(() => track.id), // Referencing the 'id' column of 'track' table
+    .references(() => track.id)
+    .unique(),
   order: integer("order").default(1),
   createdAt: text("created_at").default(sql`CURRENT_TIMESTAMP`),
 });
