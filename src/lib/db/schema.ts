@@ -1,8 +1,9 @@
 import { sql } from "drizzle-orm";
 import { integer, sqliteTable, text, real } from "drizzle-orm/sqlite-core";
 
+// Account Table
 export const account = sqliteTable("account", {
-  id: integer("id").primaryKey({ autoIncrement: true }),
+  id: integer("id").primaryKey({ autoIncrement: true }).default(1),
   username: text("username").default("Guest"),
   installed: integer("installed", { mode: "boolean" }).default(false),
   theme: text("theme").default("system"),
@@ -10,6 +11,7 @@ export const account = sqliteTable("account", {
   updatedAt: text("updated_at").default(sql`CURRENT_TIMESTAMP`),
 });
 
+// Playback Settings Table
 export const playbackSettings = sqliteTable("playback_settings", {
   id: integer("id").primaryKey({ autoIncrement: true }),
   volume: real("volume").default(1.0),
@@ -20,6 +22,7 @@ export const playbackSettings = sqliteTable("playback_settings", {
   updatedAt: text("updated_at").default(sql`CURRENT_TIMESTAMP`),
 });
 
+// Default Folder Table
 export const defaultFolder = sqliteTable("default_folder", {
   id: integer("id").primaryKey({ autoIncrement: true }),
   folderId: text("folder_id").notNull(),
@@ -29,49 +32,62 @@ export const defaultFolder = sqliteTable("default_folder", {
   updatedAt: text("updated_at").default(sql`CURRENT_TIMESTAMP`),
 });
 
-export const folders = sqliteTable("folders", {
+// Playlist Table
+export const playlist = sqliteTable("playlist", {
   id: integer("id").primaryKey({ autoIncrement: true }),
   name: text("name").notNull(),
-  uri: text("uri").notNull().unique(),
   coverImage: text("cover_image"),
   createdAt: text("created_at").default(sql`CURRENT_TIMESTAMP`),
   updatedAt: text("updated_at").default(sql`CURRENT_TIMESTAMP`),
 });
 
+// PlaylistTrack Association Table (for Many-to-Many relationship)
+export const playlistTrack = sqliteTable("playlist_track", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  playlistId: integer("playlist_id")
+    .notNull()
+    .references(() => playlist.id), // Referencing the 'id' column of 'playlist' table
+  trackId: integer("track_id")
+    .notNull()
+    .references(() => track.id), // Referencing the 'id' column of 'track' table
+  order: integer("order").default(1),
+  createdAt: text("created_at").default(sql`CURRENT_TIMESTAMP`),
+});
+
+// Track Table
 export const track = sqliteTable("track", {
   id: integer("id").primaryKey({ autoIncrement: true }),
-  dbFolderId: integer("actual_folder_id"),
   folderId: text("folder_id").notNull(),
   name: text("file_name").notNull(),
-  uri: text("uri").notNull(),
+  uri: text("uri").notNull().unique(),
   duration: text("duration").notNull(),
-  albumId: text("album_id"),
+
+  isPlaying: integer("is_playing", { mode: "boolean" }).default(false),
+  lastPlayed: integer("last_played"), // This will store the last played timestamp `Date.now()`
+
   createdAt: text("created_at").default(sql`CURRENT_TIMESTAMP`),
   updatedAt: text("updated_at").default(sql`CURRENT_TIMESTAMP`),
 });
 
-export const lastPlaying = sqliteTable("last_playing", {
-  id: integer("id").primaryKey({ autoIncrement: true }),
-  trackName: text("track_name").notNull(),
-  uri: text("uri").notNull(),
-  timestamp: text("timestamp").notNull(),
-  createdAt: text("created_at").default(sql`CURRENT_TIMESTAMP`),
-  updatedAt: text("updated_at").default(sql`CURRENT_TIMESTAMP`),
-});
-
-export const history = sqliteTable("history", {
-  id: integer("id").primaryKey({ autoIncrement: true }),
-  trackId: integer("track_id"),
-  createdAt: text("created_at").default(sql`CURRENT_TIMESTAMP`),
-  updatedAt: text("updated_at").default(sql`CURRENT_TIMESTAMP`),
-});
-
+// Timestamp Table
 export const timestamp = sqliteTable("timestamp", {
   id: integer("id").primaryKey({ autoIncrement: true }),
   timestamp: text("timestamp"),
   title: text("title"),
-  trackUrl: text("track_url").notNull(),
+  trackUrl: text("track_url").notNull().unique(),
+  createdAt: text("created_at").default(sql`CURRENT_TIMESTAMP`),
+  updatedAt: text("updated_at").default(sql`CURRENT_TIMESTAMP`),
+});
 
+// Wishlist Table
+export const wishlist = sqliteTable("wishlist", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  bookId: text("book_id").notNull().unique(),
+  title: text("title").notNull(),
+  author: text("author").notNull(),
+  coverImage: text("cover_image").notNull(),
+  favorite: integer("favorite", { mode: "boolean" }).default(false),
+  order: integer("order").default(1),
   createdAt: text("created_at").default(sql`CURRENT_TIMESTAMP`),
   updatedAt: text("updated_at").default(sql`CURRENT_TIMESTAMP`),
 });
