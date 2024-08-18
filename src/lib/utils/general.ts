@@ -71,7 +71,7 @@ export const formateDurationInText = (seconds: number) => {
   }
 };
 
-export function extractLocalImageUrl(url: string) {
+export function extractLocalUrl(url: string) {
   const splitString = `${DEFAULT_FOLDER_NAME}/`;
   const str = url.split(splitString);
   const secondPart = str.pop();
