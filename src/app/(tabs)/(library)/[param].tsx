@@ -1,3 +1,11 @@
+import { AntDesign } from "@expo/vector-icons";
+import { Image } from "expo-image";
+import { Asset } from "expo-media-library";
+import { useLocalSearchParams, useNavigation } from "expo-router";
+import * as React from "react";
+import { ActivityIndicator, StyleSheet, ToastAndroid } from "react-native";
+import { TouchableOpacity } from "react-native-gesture-handler";
+
 import musicDefaultImage from "@/assets/images/music-note.png";
 import { ThemedScreen } from "@/components";
 import { ThemedText } from "@/components/ThemedText";
@@ -6,15 +14,8 @@ import { TrackList } from "@/components/track";
 import { Colors } from "@/constants";
 import { getFolderContentByFolderName } from "@/lib/services/media-library";
 import { addTracks } from "@/lib/services/track-player-service";
-import { cn, extractLocalImageUrl } from "@/lib/utils";
+import { cn, extractLocalUrl } from "@/lib/utils";
 import { usePlaylistStore } from "@/store";
-import { AntDesign } from "@expo/vector-icons";
-import { Image } from "expo-image";
-import { Asset } from "expo-media-library";
-import { useLocalSearchParams, useNavigation } from "expo-router";
-import * as React from "react";
-import { ActivityIndicator, StyleSheet, ToastAndroid } from "react-native";
-import { TouchableOpacity } from "react-native-gesture-handler";
 
 const LibraryContentScreen = () => {
   const { name } = useLocalSearchParams();
@@ -25,8 +26,7 @@ const LibraryContentScreen = () => {
   const [allFiles, setAllFiles] = React.useState<Asset[] | null>(null);
 
   // Store
-  const { setCoverImage, coverImage, playlist, setPlaylistName } =
-    usePlaylistStore();
+  const { setCoverImage, coverImage, setPlaylistName } = usePlaylistStore();
 
   // Function
   const handleRefreshContent = React.useCallback(async () => {
@@ -44,7 +44,7 @@ const LibraryContentScreen = () => {
           // Setting the First Image as Cover Image
           const firstImage = tracks.images[0];
           if (firstImage) {
-            const uri = extractLocalImageUrl(firstImage.uri);
+            const uri = extractLocalUrl(firstImage.uri);
             if (uri) {
               setCoverImage(uri);
             }
