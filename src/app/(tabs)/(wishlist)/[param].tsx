@@ -5,15 +5,27 @@ import {
   ThemedView,
 } from "@/components";
 import { Colors } from "@/constants";
-import { useAppContext } from "@/context/AppContext";
-import { cn } from "@/lib/utils";
+import { Book, useAppContext } from "@/context/AppContext";
+import { db } from "@/lib/db";
+import { wishlist } from "@/lib/db/schema";
+import { cn, sleep } from "@/lib/utils";
 import { Feather, FontAwesome6 } from "@expo/vector-icons";
+import { eq } from "drizzle-orm";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import React from "react";
-import { Image, StyleSheet } from "react-native";
+import * as React from "react";
+import {
+  ActivityIndicator,
+  Image,
+  StyleSheet,
+  ToastAndroid,
+} from "react-native";
 import { ScrollView, TouchableOpacity } from "react-native-gesture-handler";
 
 const BookInfoScreen = () => {
+  const [loading, setLoading] = React.useState(false);
+  const [alreadyInWishList, setAlreadyInWishList] =
+    React.useState<boolean>(false);
+
   const { getBookById } = useAppContext();
   const { id } = useLocalSearchParams();
 
@@ -21,11 +33,75 @@ const BookInfoScreen = () => {
     if (id) return getBookById(id as string);
   }, [id]);
 
+  if (!book) return null;
+
   const router = useRouter();
 
-  const handleAddToWishlist = () => {
-    console.log("Book added to wishlist");
+  const handleAddToWishlist = async () => {
+    setLoading(true);
+    try {
+      // First check whether the book is already in the wishlist or not
+      const existingBook = await db.query.wishlist.findFirst({
+        where: eq(wishlist.bookId, book.id),
+      });
+
+      if (existingBook) {
+        setAlreadyInWishList(true);
+        ToastAndroid.show(
+          "This book is already in your wishlist",
+          ToastAndroid.SHORT
+        );
+        return;
+      } else {
+        const authorsStr = book.authors?.join(",");
+
+        await db.insert(wishlist).values({
+          bookId: book.id,
+          title: book.title,
+          author: authorsStr,
+          coverImage: book.coverImage,
+        });
+
+        ToastAndroid.show("Book added to your wishlist", ToastAndroid.SHORT);
+      }
+    } catch (error) {
+      console.error(error);
+      if (error instanceof Error) {
+        ToastAndroid.show(error.message, ToastAndroid.SHORT);
+      }
+    } finally {
+      sleep(1000);
+      setLoading(false);
+    }
   };
+
+  const goToWishlistScreen = () => {
+    router.push("/(wishlist)/wishlist");
+  };
+
+  React.useEffect(() => {
+    const checkIsInWishlist = async () => {
+      try {
+        // First check whether the book is already in the wishlist or not
+        const existingBook = await db.query.wishlist.findFirst({
+          where: eq(wishlist.bookId, book.id),
+        });
+
+        if (existingBook) {
+          setAlreadyInWishList(true);
+          return;
+        }
+      } catch (error) {
+        console.error(error);
+        if (error instanceof Error) {
+          ToastAndroid.show(error.message, ToastAndroid.SHORT);
+        }
+      }
+    };
+
+    const tx = setTimeout(checkIsInWishlist, 1000);
+    return () => clearTimeout(tx);
+  }, []);
 
   return (
     <ThemedScreen style={styles.screen}>
@@ -69,15 +145,31 @@ const BookInfoScreen = () => {
 
           {/* Add to Wishlist Button */}
           <ThemedButton
-            onPress={handleAddToWishlist}
+            onPress={
+              alreadyInWishList ? goToWishlistScreen : handleAddToWishlist
+            }
             style={styles.wishlistButton}
             variant="default"
             size="full"
           >
-            <FontAwesome6 name="add" size={24} color={Colors.dark.foreground} />
-            <ThemedText style={styles.wishlistButtonText}>
-              Add to Wishlist
-            </ThemedText>
+            {loading ? (
+              <ActivityIndicator color={Colors.dark.primary} size={50} />
+            ) : alreadyInWishList ? (
+              <>
+                <ThemedText>This book is already on your wishlist</ThemedText>
+              </>
+            ) : (
+              <>
+                <FontAwesome6
+                  name="add"
+                  size={24}
+                  color={Colors.dark.foreground}
+                />
+                <ThemedText style={styles.wishlistButtonText}>
+                  Add to Wishlist
+                </ThemedText>
+              </>
+            )}
           </ThemedButton>
         </ThemedView>
       </ScrollView>
