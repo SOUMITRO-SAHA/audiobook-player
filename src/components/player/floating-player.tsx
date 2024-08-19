@@ -6,34 +6,52 @@ import { useActiveTrack } from "react-native-track-player";
 import { ThemedView } from "../ThemedView";
 import { MovingText } from "./moving-text";
 import { PlayPauseButton, SkipToNextButton } from "./player-control";
+import { Image } from "expo-image";
 
 export type FloatingPlayerProps = {
   onNavigate: () => void;
 };
 
 export const FloatingPlayer = ({ onNavigate }: FloatingPlayerProps) => {
-  const currentTrack = useActiveTrack();
+  const activeTrack = useActiveTrack();
 
   const handleButtonPress = () => {
     onNavigate?.();
   };
 
-  if (!currentTrack) return null;
+  if (!activeTrack) return null;
 
   return (
     <View className="absolute p-2 px-5 rounded-xl" style={styles.container}>
       <TouchableOpacity activeOpacity={0.9} onPress={handleButtonPress}>
         <View className="flex flex-row items-center space-x-2 max-w-[80%]">
-          <ThemedView className="flex items-center justify-center w-12 h-12 p-1 rounded">
-            <SimpleLineIcons
-              name="music-tone-alt"
-              size={24}
-              color={Colors.dark.foreground}
-            />
-          </ThemedView>
+          <View className="w-12 h-12 bg-transparent rounded">
+            {activeTrack.artwork ? (
+              <Image
+                source={activeTrack.artwork}
+                style={[
+                  {
+                    width: "100%",
+                    height: "100%",
+                    objectFit: "cover",
+                    borderRadius: 10,
+                  },
+                ]}
+              />
+            ) : (
+              <ThemedView className="flex items-center justify-center w-12 h-12 p-1 rounded">
+                <SimpleLineIcons
+                  name="music-tone-alt"
+                  size={24}
+                  color={Colors.dark.foreground}
+                />
+              </ThemedView>
+            )}
+          </View>
+
           <View className="w-[98%] overflow-hidden">
             <MovingText
-              text={String(currentTrack?.title)}
+              text={String(activeTrack?.title)}
               animationThreshold={25}
               style={{
                 overflow: "hidden",
