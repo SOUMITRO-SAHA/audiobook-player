@@ -5,7 +5,7 @@ import {
   ThemedView,
 } from "@/components";
 import { Colors } from "@/constants";
-import { Book, useAppContext } from "@/context/AppContext";
+import { useAppContext } from "@/context/AppContext";
 import { db } from "@/lib/db";
 import { wishlist } from "@/lib/db/schema";
 import { cn, sleep } from "@/lib/utils";
@@ -124,7 +124,7 @@ const BookInfoScreen = () => {
           {/* Book Cover Image */}
           <Image
             source={{
-              uri: book?.coverImage ?? "https://via.placeholder.com/150",
+              uri: book?.coverImage || "https://via.placeholder.com/150",
             }}
             style={styles.coverImage}
             resizeMode="cover"
