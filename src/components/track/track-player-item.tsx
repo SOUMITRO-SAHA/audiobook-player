@@ -1,46 +1,42 @@
 import { Entypo, FontAwesome } from "@expo/vector-icons";
 import { Asset } from "expo-media-library";
-import { TouchableHighlight } from "react-native";
-
-import { Colors } from "@/constants";
-import { addSingleTrack } from "@/lib/services/track-player-service";
-import { formatTime } from "@/lib/utils";
 import * as React from "react";
+import { TouchableHighlight } from "react-native";
 import TrackPlayer, {
   State,
   useActiveTrack,
   usePlaybackState,
 } from "react-native-track-player";
-import { MovingText } from "../player";
-import { ThemedText } from "../ThemedText";
-import { ThemedView } from "../ThemedView";
+
+import { ThemedText, ThemedView } from "@/components";
+import { MovingText } from "@/components/player";
+import { Colors } from "@/constants";
+import { addSingleTrack } from "@/lib/services/track-player-helper";
+import { formatTime } from "@/lib/utils";
 
 export const TrackListItem = ({
   track,
   index,
+  handleTrackSelect,
 }: {
   track: Asset;
   index?: number;
+  handleTrackSelect?: (track: Asset) => void;
 }) => {
   const isActiveTrack = useActiveTrack()?.url === track.uri;
   const { state } = usePlaybackState();
   const activeTrack = useActiveTrack();
 
   const handleTrackListItemPress = async (item: Asset) => {
-    if (index) {
-      // setCurrentPlaylistIndex(index);
-      // TODO
-    } else {
-      // First Checking whether there is any active track
-      if (activeTrack && activeTrack?.url === track.uri) {
-        if (state && state === State.Playing) {
-          await TrackPlayer.pause();
-        } else {
-          await TrackPlayer.play();
-        }
+    // First Checking whether there is any active track
+    if (activeTrack && activeTrack?.url === track.uri) {
+      if (state && state === State.Playing) {
+        await TrackPlayer.pause();
       } else {
-        addSingleTrack(item);
+        await TrackPlayer.play();
       }
+    } else {
+      addSingleTrack({ asset: item });
     }
   };
 
@@ -59,7 +55,11 @@ export const TrackListItem = ({
   return (
     <TouchableHighlight
       key={track.id}
-      onPress={() => handleTrackListItemPress(track)}
+      onPress={
+        handleTrackSelect
+          ? () => handleTrackSelect(track)
+          : () => handleTrackListItemPress(track)
+      }
     >
       <ThemedView className="flex flex-row items-center justify-between p-3 space-x-4 bg-slate-800 rounded-xl">
         <ThemedView className="flex items-center justify-center w-10 h-10 p-2 rounded-full">
