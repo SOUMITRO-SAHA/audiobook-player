@@ -7,7 +7,6 @@ import PlayerFeatures from "@/components/player/player-features";
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
 import { Colors, screenPadding } from "@/constants";
-import { useAppContext } from "@/context/AppContext";
 import { useBackgroundImageColor } from "@/hooks/useBackgroundImageColor";
 import { defaultStyles } from "@/styles";
 import { Feather } from "@expo/vector-icons";
@@ -18,53 +17,18 @@ import { ActivityIndicator, StyleSheet, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useActiveTrack, useIsPlaying } from "react-native-track-player";
 
-const blurhash =
-  "|rF?hV%2WCj[ayj[a|j[az_NaeWBj@ayfRayfQfQM{M|azj[azf6fQfQfQIpWXofj[ayj[j[fQayWCoeoeaya}j[ayfQa{oLj?j[WVj[ayayj[fQoff7azayj[ayj[j[ayofayayayj[fQj[ayayj[ayfjj[j[ayjuayj[";
-
 const AudioPlayer = () => {
   // HOOKS
   const { top, bottom } = useSafeAreaInsets();
-  const currentTrack = useActiveTrack();
+  const activeTrack = useActiveTrack();
   const { playing } = useIsPlaying();
-  const [coverImage, setCoverImage] = React.useState<string>(musicDefaultImage);
-  const [artists, setArtists] = React.useState<string[] | null>(null);
-  const [albumName, setAlbumName] = React.useState<string | null>(null);
-
-  const { getBookInfo } = useAppContext();
-
-  // Memoization
-  React.useEffect(() => {
-    // TODO: First Update the Database with the following Information | then first check in the database if the info preset or not if present then do not call the apis, and if not present then call the apis
-    const fetchBookInfo = async () => {
-      if (currentTrack) {
-        try {
-          const bookInfo = await getBookInfo(currentTrack.title as string);
-
-          if (currentTrack.artwork) {
-            setCoverImage(currentTrack.artwork);
-          } else if (bookInfo && bookInfo.length > 0) {
-            const relevantInfo = bookInfo.find(
-              (info) => !info?.authors?.includes("Unknown")
-            );
-            if (relevantInfo) {
-              setCoverImage(relevantInfo.coverImage);
-              setArtists(relevantInfo.authors);
-              setAlbumName(relevantInfo.title);
-            }
-          }
-        } catch (error) {
-          console.error("Error fetching book info:", error);
-        }
-      }
-    };
-
-    fetchBookInfo();
-  }, [currentTrack]);
 
   // Background Color
-  const activeImageBackgroundColor = useBackgroundImageColor(coverImage);
+  const activeImageBackgroundColor = useBackgroundImageColor(
+    activeTrack ? activeTrack.artwork : musicDefaultImage
+  );
 
-  if ((!currentTrack && !playing) || !activeImageBackgroundColor) {
+  if ((!activeTrack && !playing) || !activeImageBackgroundColor) {
     return (
       <View style={styles.overlayContainer}>
         <ThemedView className="flex flex-row items-center justify-center w-full h-full bg-transparent">
@@ -89,7 +53,7 @@ const AudioPlayer = () => {
     >
       <View style={styles.overlayContainer}>
         <DismissPlayerSymbol />
-        {currentTrack && (
+        {activeTrack && (
           <ThemedView
             className="relative"
             style={{
@@ -102,24 +66,21 @@ const AudioPlayer = () => {
             <Image
               style={styles.coverImage}
               source={
-                currentTrack && currentTrack.artwork
-                  ? currentTrack.artwork
-                  : coverImage
-                  ? coverImage
+                activeTrack && activeTrack.artwork
+                  ? activeTrack.artwork
                   : UnknownTrack
               }
-              placeholder={{ blurhash }}
               contentFit="cover"
               transition={1000}
             />
             <ThemedText
               className="mt-3 text-center"
               style={{
-                color: Colors.dark.mutedForeground,
+                color: Colors.dark.text,
               }}
             >
-              {albumName}
-              {artists && ` | ${artists?.join(", ")}`}
+              {activeTrack && activeTrack.album}
+              {activeTrack && ` | ${activeTrack.artist}`}
             </ThemedText>
 
             {/* Track Title */}
@@ -134,7 +95,7 @@ const AudioPlayer = () => {
                 }}
               >
                 <MovingText
-                  text={currentTrack.title as string}
+                  text={activeTrack.title as string}
                   animationThreshold={30}
                 />
               </View>
