@@ -59,10 +59,12 @@ export const playlistTrack = sqliteTable("playlist_track", {
 // Track Table
 export const track = sqliteTable("track", {
   id: integer("id").primaryKey({ autoIncrement: true }),
-  folderId: text("folder_id").notNull(),
-  name: text("file_name").notNull(),
-  uri: text("uri").notNull().unique(),
+  title: text("title").notNull(),
+  url: text("uri").notNull().unique(),
   duration: text("duration").notNull(),
+  artwork: text("cover_image"),
+  album: text("album"),
+  artist: text("artist"),
 
   isPlaying: integer("is_playing", { mode: "boolean" }).default(false),
   lastPlayed: integer("last_played"), // This will store the last played timestamp `Date.now()`

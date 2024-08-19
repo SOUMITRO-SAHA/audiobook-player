@@ -57,20 +57,28 @@ export const upsertSingleTrack = async (
     const newTrackInDb = await db
       .insert(track)
       .values({
-        folderId: String(t.id),
-        name: String(t.filename),
-        uri: String(t.uri),
+        title: String(t.filename),
+        url: String(t.uri),
         duration: String(t.duration),
+        artist: t.artist,
+        album: t.album,
+        artwork: t.artwork,
+
         isPlaying: false,
+        lastPlayed: Date.now(),
       })
       .onConflictDoUpdate({
-        target: track.uri,
+        target: track.url,
         set: {
-          folderId: String(t.id),
-          name: String(t.filename),
-          uri: String(t.uri),
+          title: String(t.filename),
+          url: String(t.uri),
           duration: String(t.duration),
+          artist: t.artist,
+          album: t.album,
+          artwork: t.artwork,
+
           isPlaying: false,
+          lastPlayed: Date.now(),
         },
       })
       .returning({ id: track.id });

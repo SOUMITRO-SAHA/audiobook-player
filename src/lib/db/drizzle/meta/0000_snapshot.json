@@ -1,7 +1,7 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "7b967c70-4959-4963-b707-094821e7bd0e",
+  "id": "cd59d7b3-4da7-4815-a642-1f7b6bcd1341",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
     "account": {
@@ -266,7 +266,22 @@
           "default": "CURRENT_TIMESTAMP"
         }
       },
-      "indexes": {},
+      "indexes": {
+        "playlist_track_playlist_id_unique": {
+          "name": "playlist_track_playlist_id_unique",
+          "columns": [
+            "playlist_id"
+          ],
+          "isUnique": true
+        },
+        "playlist_track_track_id_unique": {
+          "name": "playlist_track_track_id_unique",
+          "columns": [
+            "track_id"
+          ],
+          "isUnique": true
+        }
+      },
       "foreignKeys": {
         "playlist_track_playlist_id_playlist_id_fk": {
           "name": "playlist_track_playlist_id_playlist_id_fk",
@@ -369,15 +384,8 @@
           "notNull": true,
           "autoincrement": true
         },
-        "folder_id": {
-          "name": "folder_id",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "file_name": {
-          "name": "file_name",
+        "title": {
+          "name": "title",
           "type": "text",
           "primaryKey": false,
           "notNull": true,
@@ -395,6 +403,27 @@
           "type": "text",
           "primaryKey": false,
           "notNull": true,
+          "autoincrement": false
+        },
+        "cover_image": {
+          "name": "cover_image",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "album": {
+          "name": "album",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "artist": {
+          "name": "artist",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
           "autoincrement": false
         },
         "is_playing": {

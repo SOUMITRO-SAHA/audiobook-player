@@ -1,8 +1,8 @@
+import { eq, InferModelFromColumns, InferSelectModel } from "drizzle-orm";
 import { ToastAndroid } from "react-native";
+import { Track } from "react-native-track-player";
 import { db } from "../db";
 import { playlist, playlistTrack, timestamp, track } from "../schema";
-import { eq } from "drizzle-orm";
-import { Track } from "react-native-track-player";
 
 export const getPlaylistWithPlayingTrack = async (): Promise<any | null> => {
   try {
@@ -36,17 +36,7 @@ export const getPlaylistWithPlayingTrack = async (): Promise<any | null> => {
   }
 };
 
-type ActiveTrackType = {
-  id: number;
-  name: string;
-  createdAt: string | null;
-  updatedAt: string | null;
-  folderId: string;
-  uri: string;
-  duration: string;
-  isPlaying: boolean | null;
-  lastPlayed: number | null;
-};
+type ActiveTrackType = InferSelectModel<typeof track>;
 
 export const getLastActiveTrack = async (): Promise<
   ActiveTrackType | undefined
@@ -56,6 +46,7 @@ export const getLastActiveTrack = async (): Promise<
     const activeTrack = await db.query.track.findFirst({
       where: eq(track.isPlaying, true),
     });
+
     return activeTrack;
   } catch (error) {
     console.error("Error fetching last active track:", error);
@@ -67,15 +58,13 @@ export const getLastActiveTrack = async (): Promise<
 
 export const updateActivePlayingTrackInDb = async (t: Track) => {
   try {
-    // Update the track in the database to indicate that it is playing now
-    // and also update the last played timestamp to the current time
     return await db
       .update(track)
       .set({
         isPlaying: true,
         lastPlayed: Date.now(),
       })
-      .where(eq(track.uri, t?.url))
+      .where(eq(track.url, t?.url))
       .returning({
         id: track.id,
         isPlaying: track.isPlaying,
