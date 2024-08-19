@@ -13,12 +13,16 @@ import "react-native-reanimated";
 import { RootSiblingParent } from "react-native-root-siblings";
 import TrackPlayer from "react-native-track-player";
 
-import { AppWideSuspense, ThemedScreen } from "@/components";
+import {
+  AppWideSuspense,
+  ThemedScreen,
+  ThemedText,
+  ThemedView,
+} from "@/components";
 import ParallaxScrollView from "@/components/ParallaxScrollView";
-import { ThemedText } from "@/components/ThemedText";
-import { ThemedView } from "@/components/ThemedView";
 import { Colors, DEFAULT_DATABASE_NAME } from "@/constants";
 import AppContextProvider from "@/context/AppContext";
+import useLoadLastPlayTrack from "@/hooks/useLoadLastPlayTrack";
 import migrations from "@/lib/db/drizzle/migrations";
 import {
   GetPermissionStatus,
@@ -31,7 +35,6 @@ import {
   useSetupTrackPlayer,
 } from "@/lib/services/track-player-service";
 import { useTrackPlayerStore } from "@/store";
-import useLoadLastPlayTrack from "@/hooks/useLoadLastPlayTrack";
 
 // Database Connector
 const expoDb = openDatabaseSync(DEFAULT_DATABASE_NAME);
