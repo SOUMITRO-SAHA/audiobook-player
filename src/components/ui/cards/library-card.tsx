@@ -30,7 +30,7 @@ export const LibraryCard: React.FC<LibraryProps> = (props) => {
     >
       <ThemedView className="flex flex-row items-center space-x-3 w-[90%] bg-transparent">
         <LinearGradient colors={color} style={styles.gradient} />
-        <ThemedText className="text-gray-400">{props.name}</ThemedText>
+        <ThemedText className="text-gray-400 w-[88%]">{props.name}</ThemedText>
       </ThemedView>
 
       <Pressable
