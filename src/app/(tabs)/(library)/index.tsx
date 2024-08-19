@@ -1,17 +1,16 @@
-import { ThemedScreen } from "@/components";
-import { ThemedText } from "@/components/ThemedText";
-import { ThemedView } from "@/components/ThemedView";
+import { Ionicons } from "@expo/vector-icons";
+import { Asset } from "expo-media-library";
+import * as React from "react";
+import { ActivityIndicator, FlatList, TouchableOpacity } from "react-native";
+import { ReadDirItem } from "react-native-fs";
+
+import { ThemedScreen, ThemedText, ThemedView } from "@/components";
 import { TrackListItem } from "@/components/track";
 import { LibraryCard } from "@/components/ui";
 import { Colors } from "@/constants";
 import { readDefaultDirectory } from "@/lib/services/fs-worker";
 import { cn } from "@/lib/utils";
 import { useAppStore, usePlaylistStore } from "@/store";
-import { Ionicons } from "@expo/vector-icons";
-import { Asset } from "expo-media-library";
-import * as React from "react";
-import { ActivityIndicator, FlatList, TouchableOpacity } from "react-native";
-import { ReadDirItem } from "react-native-fs";
 
 export default function LibraryScreen() {
   const [refreshCount, setRefreshCount] = React.useState<number>(0);
@@ -24,7 +23,7 @@ export default function LibraryScreen() {
   const { isLibraryLoading, setLibraryLoading, resetLibraryLoading } =
     useAppStore();
 
-  const { resetPlaylistName, resetCoverImage, resetPlaylist } =
+  const { resetPlaylistName, resetCoverImage, coverImage, playlistName } =
     usePlaylistStore();
 
   const handleRefresh = async () => {
@@ -61,12 +60,12 @@ export default function LibraryScreen() {
           setFolders(defaultDirectory.directories);
           setFiles(defaultDirectory.files);
         }
-
-        // Also Updating the Store
-        resetCoverImage();
       } catch (error) {
         console.error("Error reading default directory:", error);
       } finally {
+        // Also Updating the Store
+        resetCoverImage();
+        resetPlaylistName();
         resetLibraryLoading();
       }
     })();
@@ -75,6 +74,7 @@ export default function LibraryScreen() {
   React.useEffect(() => {
     (() => {
       resetCoverImage();
+      resetPlaylistName();
     })();
   }, []);
 
