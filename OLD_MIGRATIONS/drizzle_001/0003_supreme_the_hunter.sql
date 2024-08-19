@@ -1,1 +1,0 @@
-ALTER TABLE `track` DROP COLUMN `cover_image`;
