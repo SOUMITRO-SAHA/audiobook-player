@@ -83,7 +83,7 @@ export const upsertSingleTrack = async (
       })
       .returning({ id: track.id });
 
-    return newTrackInDb?.[0] ?? null;
+    return newTrackInDb?.[0] || null;
   } catch (error) {
     console.error("Error upserting track:", error);
     return null;

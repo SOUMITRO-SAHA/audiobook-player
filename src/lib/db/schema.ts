@@ -35,8 +35,8 @@ export const defaultFolder = sqliteTable("default_folder", {
 // Playlist Table
 export const playlist = sqliteTable("playlist", {
   id: integer("id").primaryKey({ autoIncrement: true }),
-  name: text("name").notNull(),
-  coverImage: text("cover_image"),
+  name: text("name").notNull().unique(),
+  coverImage: text("cover_image").unique(),
   createdAt: text("created_at").default(sql`CURRENT_TIMESTAMP`),
   updatedAt: text("updated_at").default(sql`CURRENT_TIMESTAMP`),
 });

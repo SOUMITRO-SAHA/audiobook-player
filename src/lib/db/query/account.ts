@@ -4,7 +4,6 @@ export const fetchAccount = async () => {
   try {
     const response = await db.query.account.findFirst();
     if (response) {
-      //   console.log("Account found", response);
       return response;
     }
     return null;

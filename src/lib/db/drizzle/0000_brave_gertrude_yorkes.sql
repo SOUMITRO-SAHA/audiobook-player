@@ -79,6 +79,8 @@ CREATE TABLE `wishlist` (
 	`updated_at` text DEFAULT CURRENT_TIMESTAMP
 );
 --> statement-breakpoint
+CREATE UNIQUE INDEX `playlist_name_unique` ON `playlist` (`name`);--> statement-breakpoint
+CREATE UNIQUE INDEX `playlist_cover_image_unique` ON `playlist` (`cover_image`);--> statement-breakpoint
 CREATE UNIQUE INDEX `playlist_track_playlist_id_unique` ON `playlist_track` (`playlist_id`);--> statement-breakpoint
 CREATE UNIQUE INDEX `playlist_track_track_id_unique` ON `playlist_track` (`track_id`);--> statement-breakpoint
 CREATE UNIQUE INDEX `timestamp_track_url_unique` ON `timestamp` (`track_url`);--> statement-breakpoint

@@ -1,7 +1,7 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "cd59d7b3-4da7-4815-a642-1f7b6bcd1341",
+  "id": "e8a28bdd-e4ef-419f-a454-bb18b6bf2fd6",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
     "account": {
@@ -220,7 +220,22 @@
           "default": "CURRENT_TIMESTAMP"
         }
       },
-      "indexes": {},
+      "indexes": {
+        "playlist_name_unique": {
+          "name": "playlist_name_unique",
+          "columns": [
+            "name"
+          ],
+          "isUnique": true
+        },
+        "playlist_cover_image_unique": {
+          "name": "playlist_cover_image_unique",
+          "columns": [
+            "cover_image"
+          ],
+          "isUnique": true
+        }
+      },
       "foreignKeys": {},
       "compositePrimaryKeys": {},
       "uniqueConstraints": {}

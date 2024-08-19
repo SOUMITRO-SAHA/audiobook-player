@@ -1,7 +1,10 @@
 import { db } from "@/lib/db";
 import { account } from "../schema";
+import { ToastAndroid } from "react-native";
+import { useAppStore } from "@/store";
 
 export const seedDefaultAccount = async () => {
+  const { setLoading } = useAppStore();
   try {
     const response = await db.insert(account).values({
       username: "Guest",
@@ -9,11 +12,15 @@ export const seedDefaultAccount = async () => {
     });
 
     if (response) {
-      console.log("Default Account Created!!!");
+      setLoading();
     } else {
-      console.warn("Error creating default account");
+      ToastAndroid.show("Error creating default account", ToastAndroid.LONG);
     }
   } catch (error) {
     console.error(error);
+
+    if (error instanceof Error) {
+      ToastAndroid.show(error.message, ToastAndroid.LONG);
+    }
   }
 };
