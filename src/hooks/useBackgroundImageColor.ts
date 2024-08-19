@@ -14,6 +14,7 @@ type ColorType = {
   
   const demo = {
     primary: "#506088",
+    secondary: "#5070A8",
     raw: {
       average: "#232125",
       darkMuted: "#506088",
@@ -25,7 +26,6 @@ type ColorType = {
       platform: "android",
       vibrant: "#305080",
     },
-    secondary: "#5070A8",
   };
 */
 
@@ -45,7 +45,7 @@ export const useBackgroundImageColor = (url: string) => {
         case "android":
           setColors({
             primary: value.lightVibrant,
-            secondary: value.vibrant,
+            secondary: value.darkMuted,
             tertiary: value.muted,
             raw: value,
           });
