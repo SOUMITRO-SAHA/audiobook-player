@@ -1,21 +1,38 @@
-import { AntDesign } from "@expo/vector-icons";
+import { AntDesign, Ionicons } from "@expo/vector-icons";
 import { Image } from "expo-image";
 import { Asset } from "expo-media-library";
-import { useLocalSearchParams, useNavigation } from "expo-router";
+import {
+  useFocusEffect,
+  useLocalSearchParams,
+  useNavigation,
+} from "expo-router";
 import * as React from "react";
-import { ActivityIndicator, StyleSheet, ToastAndroid } from "react-native";
+import {
+  ActivityIndicator,
+  Alert,
+  BackHandler,
+  StyleSheet,
+  ToastAndroid,
+} from "react-native";
 import { TouchableOpacity } from "react-native-gesture-handler";
 
 import musicDefaultImage from "@/assets/images/music-note.png";
-import { ThemedScreen } from "@/components";
-import { ThemedText } from "@/components/ThemedText";
-import { ThemedView } from "@/components/ThemedView";
+import {
+  ThemedButton,
+  ThemedScreen,
+  ThemedText,
+  ThemedView,
+} from "@/components";
 import { TrackList } from "@/components/track";
 import { Colors } from "@/constants";
+import { db } from "@/lib/db";
+import { playlist } from "@/lib/db/schema";
+import { fetchBookInfo, getBookInfo } from "@/lib/services/fetch-book-info";
 import { getFolderContentByFolderName } from "@/lib/services/media-library";
-import { addTracks } from "@/lib/services/track-player-service";
+import { addTracks } from "@/lib/services/track-player-helper";
 import { cn, extractLocalUrl } from "@/lib/utils";
 import { usePlaylistStore } from "@/store";
+import { eq } from "drizzle-orm";
 
 const LibraryContentScreen = () => {
   const { name } = useLocalSearchParams();
@@ -24,9 +41,22 @@ const LibraryContentScreen = () => {
   // States
   const [initialLoading, setInitialLoading] = React.useState<boolean>(true);
   const [allFiles, setAllFiles] = React.useState<Asset[] | null>(null);
+  const [resetMainCoverImage, setMainResetCoverImage] =
+    React.useState<boolean>(false);
 
   // Store
-  const { setCoverImage, coverImage, setPlaylistName } = usePlaylistStore();
+  const {
+    allBooksInfo,
+    coverImage,
+    currentlySelectedBooksInfo,
+
+    setCoverImage,
+    setPlaylistName,
+    resetPlaylistName,
+    resetCoverImage,
+    setAllBooksInfo,
+    setCurrentlySelectedBooksInfo,
+  } = usePlaylistStore();
 
   // Function
   const handleRefreshContent = React.useCallback(async () => {
@@ -41,13 +71,51 @@ const LibraryContentScreen = () => {
         }
 
         // Setting the CoverImages
-        if (tracks && tracks.images) {
+        if (tracks && tracks.images && tracks.images.length > 0) {
           // Setting the First Image as Cover Image
           const firstImage = tracks.images[0];
           if (firstImage) {
             coverImageUrl = extractLocalUrl(firstImage.uri);
             if (coverImageUrl) {
               setCoverImage(coverImageUrl);
+            }
+          }
+        } else if (tracks && tracks.images && tracks.images.length === 0) {
+          setMainResetCoverImage(true); // This option only visible for Database/online resources
+
+          const playlistName = name as string;
+
+          // First Check in the Database for the Image:
+          const existingCoverImage = await db.query.playlist.findFirst({
+            where: eq(playlist.name, playlistName),
+          });
+
+          if (existingCoverImage && existingCoverImage.coverImage) {
+            setCoverImage(existingCoverImage.coverImage);
+          } else {
+            // Fetch the book metadata for the google books
+            const bookInfoFromGoogleBooks = await fetchBookInfo(name as string);
+
+            if (bookInfoFromGoogleBooks) {
+              coverImageUrl = bookInfoFromGoogleBooks?.coverImage;
+
+              if (coverImageUrl) {
+                setCoverImage(coverImageUrl);
+
+                // Also update this into the Database
+                const upsertPlaylistInfo = await db
+                  .insert(playlist)
+                  .values({
+                    name: playlistName,
+                    coverImage: coverImageUrl,
+                  })
+                  .onConflictDoUpdate({
+                    target: playlist.name,
+                    set: {
+                      coverImage: coverImageUrl,
+                    },
+                  });
+              }
             }
           }
         }
@@ -61,10 +129,85 @@ const LibraryContentScreen = () => {
     }
   }, [name, initialLoading]);
 
+  const handleResetMainCoverImage = () => {
+    try {
+      Alert.alert(
+        "Change the Cover Image",
+        "Are you sure you want to change this cover image?",
+        [
+          {
+            text: "Cancel",
+            onPress: () => null,
+            style: "cancel",
+          },
+          {
+            text: "YES",
+            onPress: async () => {
+              const playlistName = name as string;
+              let bookInfo;
+
+              // First Check whether book info already present in the global store
+              if (allBooksInfo && allBooksInfo.length > 0) {
+                bookInfo = allBooksInfo;
+              } else {
+                bookInfo = await getBookInfo(playlistName);
+
+                if (bookInfo) {
+                  // Before Directly Assign BookInfo first filter the books info
+                  const filteredBookInfo = bookInfo.filter((info) =>
+                    info.title.includes(playlistName)
+                  );
+
+                  if (filteredBookInfo) {
+                    setAllBooksInfo(bookInfo);
+                  } else {
+                    Alert.alert("Message", "No relevant book info found.");
+                    setMainResetCoverImage(false);
+                    return;
+                  }
+                }
+              }
+
+              // First Setting the cover Image Data in the Global Store for multiple time changing the cover image
+              if (bookInfo && bookInfo.length > 0) {
+                // Now Just update the cover Image in sequential order
+                if (currentlySelectedBooksInfo >= bookInfo.length)
+                  setCurrentlySelectedBooksInfo(0);
+
+                const currentBookInfo = bookInfo[currentlySelectedBooksInfo];
+                if (currentBookInfo)
+                  setCurrentlySelectedBooksInfo(currentlySelectedBooksInfo + 1);
+
+                // Update the cover Image
+                setCoverImage(currentBookInfo.coverImage);
+
+                console.log(
+                  "Current BookInfo: ",
+                  currentlySelectedBooksInfo,
+                  currentBookInfo
+                );
+
+                // Update in the Database
+                await db.update(playlist).set({
+                  coverImage: currentBookInfo.coverImage,
+                });
+              }
+            },
+          },
+        ]
+      );
+    } catch (error) {}
+  };
+
   const handleAddingPlaylist = React.useCallback(async () => {
+    // First check whether the track is already playing or not
+    // If already playing the current playlist then just play-pause the music
+
+    // If not playing then create a new track
     // Now adding all files to the playlist
     if (allFiles && allFiles.length > 0) {
-      addTracks(allFiles);
+      // Adding all the files to the playlist and play when ready
+      addTracks({ assets: allFiles });
       return;
     } else {
       ToastAndroid.show("Playlist is empty", ToastAndroid.SHORT);
@@ -88,6 +231,25 @@ const LibraryContentScreen = () => {
     const timeout = setTimeout(handleRefreshContent, 1000);
     return () => clearTimeout(timeout);
   }, [name, initialLoading]);
+
+  useFocusEffect(
+    React.useCallback(() => {
+      const backAction = () => {
+        resetCoverImage();
+        resetPlaylistName();
+
+        navigation.goBack();
+        return true;
+      };
+
+      const backHandler = BackHandler.addEventListener(
+        "hardwareBackPress",
+        backAction
+      );
+
+      return () => backHandler.remove();
+    }, [])
+  );
 
   if (initialLoading) {
     return (
@@ -113,8 +275,24 @@ const LibraryContentScreen = () => {
               backgroundColor: Colors.dark.primary,
             }}
           >
+            {resetMainCoverImage && (
+              <ThemedButton
+                onPress={handleResetMainCoverImage}
+                variant="ghost"
+                size="icon"
+                style={{
+                  position: "absolute",
+                  top: 0,
+                  right: 0,
+                  zIndex: 10,
+                  paddingHorizontal: 10,
+                }}
+              >
+                <Ionicons name="reload" size={24} color={Colors.dark.text} />
+              </ThemedButton>
+            )}
             <Image
-              source={coverImage ?? musicDefaultImage}
+              source={coverImage || musicDefaultImage}
               style={[
                 styles.coverImage,
                 coverImage
@@ -148,6 +326,7 @@ const LibraryContentScreen = () => {
           {/* Audio Files */}
           {allFiles && (
             <TrackList
+              id={name as string}
               trackList={allFiles}
               refreshing={initialLoading}
               handleRefresh={() => {
