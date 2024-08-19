@@ -1,4 +1,4 @@
-import { Asset } from "expo-media-library";
+import { Book } from "@/types/book";
 import { Track } from "react-native-track-player";
 import { create } from "zustand";
 
@@ -7,6 +7,13 @@ type PlaylistStoreProps = {
   coverImage: string;
   playbackSpeed: number;
   playlist: Track[];
+  allBooksInfo: Book[];
+  currentlySelectedBooksInfo: number;
+
+  setCurrentlySelectedBooksInfo: (index: number) => void;
+
+  setAllBooksInfo: (bookInfo: Book[]) => void;
+  resetAllBooksInfo: () => void;
 
   setPlaylist: (tracks: Track[]) => void;
   resetPlaylist: () => void;
@@ -25,6 +32,21 @@ export const usePlaylistStore = create<PlaylistStoreProps>((set) => ({
   coverImage: "",
   playbackSpeed: 1,
   playlist: [],
+  allBooksInfo: [],
+  currentlySelectedBooksInfo: 0,
+
+  setCurrentlySelectedBooksInfo: (value: number) =>
+    set({ currentlySelectedBooksInfo: value }),
+
+  setAllBooksInfo: (bookInfo: Book[]) =>
+    set({
+      allBooksInfo: bookInfo,
+    }),
+
+  resetAllBooksInfo: () =>
+    set({
+      allBooksInfo: [],
+    }),
 
   setPlaylist: (tracks: Track[]) => set({ playlist: tracks }),
   resetPlaylist: () => set({ playlist: [] }),
