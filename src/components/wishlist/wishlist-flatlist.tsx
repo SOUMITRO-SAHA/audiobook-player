@@ -1,16 +1,10 @@
-import React, { useState, useEffect, useCallback } from "react";
-import {
-  FlatList,
-  StyleSheet,
-  TouchableOpacity,
-  View,
-  Image,
-} from "react-native";
-import { useNavigation } from "@react-navigation/native";
-import { ThemedView } from "../ThemedView";
-import { ThemedText } from "../ThemedText";
-import { Book } from "@/context/AppContext";
 import { useRouter } from "expo-router";
+import React from "react";
+import { FlatList, Image, StyleSheet, TouchableOpacity } from "react-native";
+
+import { Book } from "@/types/book";
+import { ThemedText } from "@/components";
+import { ThemedView } from "@/components";
 
 interface WishListFlatlistProps {
   data: Book[];

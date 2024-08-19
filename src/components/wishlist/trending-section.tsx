@@ -1,15 +1,16 @@
+import { useRouter } from "expo-router";
 import React from "react";
 import {
-  ScrollView,
-  View,
   Image,
+  ScrollView,
   StyleSheet,
   TouchableOpacity,
+  View,
 } from "react-native";
-import { ThemedView } from "../ThemedView";
+
 import { ThemedText } from "../ThemedText";
-import { Book } from "@/context/AppContext";
-import { Link, useRouter } from "expo-router"; // Import Link for navigation
+import { ThemedView } from "../ThemedView";
+import { Book } from "@/types/book";
 
 export const TrendingSection = ({ books }: { books: Book[] }) => {
   const router = useRouter();

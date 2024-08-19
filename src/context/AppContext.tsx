@@ -1,22 +1,19 @@
+import axios from "axios";
 import React, {
   createContext,
-  useContext,
-  useState,
-  useMemo,
   useCallback,
+  useContext,
   useEffect,
+  useMemo,
+  useState,
 } from "react";
-import axios from "axios";
 
-const GOOGLE_BOOK_API_URL = "https://www.googleapis.com/books/v1/volumes";
-
-export interface Book {
-  id: string;
-  title: string;
-  authors: string[];
-  coverImage: string;
-  description?: string;
-}
+import {
+  GOOGLE_BOOK_API_URL,
+  transformBookData,
+  trendingBooksSubjects,
+} from "@/constants";
+import { Book } from "@/types/book";
 
 interface AppContextProps {
   searchBooks: (bookName: string) => Promise<void>;
@@ -38,39 +35,6 @@ const initialState: AppContextProps = {
 
 const context = createContext<AppContextProps>(initialState);
 
-const trendingBooksSubjects = [
-  "trending",
-  "science",
-  "politics",
-  "war",
-  "life",
-  "nature",
-  "self-help",
-  "philosophy",
-  "psychology",
-  "math",
-  "finance",
-  "economics",
-  "history",
-  "geography",
-  "music",
-  "art",
-  "religion",
-  "fiction",
-  "nonfiction",
-  "adventure",
-  "science fiction",
-  "mystery",
-  "romance",
-  "fantasy",
-  "crime",
-  "thriller",
-  "children's",
-  "young-adult",
-  "comics",
-  "graphic novels",
-];
-
 const AppContextProvider = ({ children }: { children: React.ReactNode }) => {
   const [trendingBooks, setTrendingBooks] = useState<Book[]>([]);
   const [searchedBooks, setSearchedBooks] = useState<Book[]>([]);
@@ -80,16 +44,6 @@ const AppContextProvider = ({ children }: { children: React.ReactNode }) => {
       Math.random() * trendingBooksSubjects.length
     );
     return trendingBooksSubjects[randomIndex];
-  }, []);
-
-  const transformBookData = useCallback((items: any[]): Book[] => {
-    return items.map((item) => ({
-      id: item.id,
-      title: item.volumeInfo.title || "No Title",
-      authors: item.volumeInfo.authors || ["Unknown Author"],
-      coverImage: item.volumeInfo.imageLinks?.thumbnail || "",
-      description: item.volumeInfo.description || "No description available.",
-    }));
   }, []);
 
   const searchBooks = useCallback(
