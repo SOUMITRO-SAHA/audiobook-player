@@ -1,21 +1,13 @@
-import { Asset } from "expo-media-library";
 import * as React from "react";
 import TrackPlayer, {
   AppKilledPlaybackBehavior,
   Capability,
   Event,
   RepeatMode,
-  Track,
   useTrackPlayerEvents,
 } from "react-native-track-player";
 
-import { usePlaylistStore, useTrackPlayerStore } from "@/store";
-import {
-  createPlaylistItems,
-  upsertSingleTrack,
-  upsertTracks,
-} from "../db/mutation/mutate-track";
-import { extractLocalUrl, retryAsyncOperation } from "../utils";
+import { useTrackPlayerStore } from "@/store";
 
 const InitializePlaybackService = async () => {
   // Initializing the player
@@ -117,86 +109,6 @@ export const useLogTrackPlayerState = () => {
       console.info("Track Change: ", event.index);
     }
   });
-};
-
-// Helper function to create a Track object from an Asset
-export const formTrackFromAsset = (
-  asset: Asset,
-  coverImage?: string,
-  albumName?: string
-): Track => ({
-  id: asset.id,
-  url: asset.uri,
-  title: asset.filename,
-  duration: asset.duration,
-  artist: "Unknown", // Default artist
-  album: albumName || asset.filename,
-  artwork: coverImage || undefined,
-});
-
-// Adds a single track and plays it
-export const addSingleTrack = async (asset: Asset) => {
-  try {
-    const { coverImage } = usePlaylistStore.getState();
-    const fileLocalUrl = extractLocalUrl(asset.uri);
-    const track = formTrackFromAsset(
-      { ...asset, uri: fileLocalUrl || asset.uri },
-      coverImage
-    );
-
-    await TrackPlayer.reset();
-    await TrackPlayer.add([track]);
-    await TrackPlayer.setRepeatMode(RepeatMode.Queue);
-    await TrackPlayer.play();
-
-    // This task is not high priority task so there shouldn't be any error because of this!
-    await retryAsyncOperation(() => upsertSingleTrack(track), 5);
-  } catch (error) {
-    console.error("Failed to add and play track:", error);
-  }
-};
-
-// Adds multiple tracks to the playlist and plays them
-export const addTracks = async (assets: Asset[]) => {
-  try {
-    const { coverImage, setPlaylist, playlistName } =
-      usePlaylistStore.getState();
-
-    const tracks = assets.map((asset) => {
-      const fileLocalUrl = extractLocalUrl(asset.uri);
-
-      return formTrackFromAsset(
-        { ...asset, uri: fileLocalUrl || asset.uri },
-        coverImage,
-        playlistName
-      );
-    });
-
-    // Setting the playlist in the store
-    setPlaylist(tracks);
-
-    // Resetting and adding the new tracks to TrackPlayer
-    await TrackPlayer.reset();
-    await TrackPlayer.add(tracks);
-    await TrackPlayer.setRepeatMode(RepeatMode.Queue);
-    await TrackPlayer.play();
-
-    // This is not high priority task
-    if (tracks.length > 0) {
-      const tracksInfo = await upsertTracks(tracks);
-
-      // Now creating the playlist items
-      await retryAsyncOperation(
-        async () =>
-          await createPlaylistItems({
-            tracks: tracksInfo,
-          }),
-        5
-      );
-    }
-  } catch (error) {
-    console.error("Failed to add and play tracks:", error);
-  }
 };
 
 export const PlaybackService = async () => {
