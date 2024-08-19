@@ -21,7 +21,6 @@ export const formatTimestamp = (timestamp: string): string => {
  */
 export const extractSubFolderNameFromUri = (uri: string): string | null => {
   try {
-    console.log("URI ===>", uri);
     // Decode the URI
     const decodedUri = decodeURIComponent(uri);
 
