@@ -17,7 +17,6 @@ const useLoadLastPlayTrack = () => {
 
       if (activePlaylist) {
         // TODO:
-        console.log("I am here: ===>", activePlaylist);
       } else {
         const lastActiveTrack = await getLastActiveTrack();
 
