@@ -74,7 +74,7 @@ export default function RootLayout() {
           setRegisterTrackPlayer(true);
         }
       } catch (error) {
-        console.log("Error registering Playback service: ", error);
+        console.error("Error registering Playback service: ", error);
       }
     })();
   }, []);
