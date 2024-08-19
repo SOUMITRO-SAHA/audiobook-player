@@ -1,3 +1,4 @@
+import { Colors } from "@/constants";
 import React from "react";
 import {
   TouchableOpacity,
@@ -10,7 +11,7 @@ import {
 interface ThemedButtonProps {
   title?: string; // Title is now optional
   onPress: () => void;
-  variant?: "default" | "secondary";
+  variant?: "default" | "secondary" | "ghost";
   size?: "sm" | "lg" | "full" | "icon";
   style?: ViewStyle;
   textStyle?: TextStyle;
@@ -31,6 +32,7 @@ export const ThemedButton: React.FC<ThemedButtonProps> = ({
       style={[
         styles.button,
         variant === "secondary" && styles.secondaryButton,
+        variant === "ghost" && styles.ghost,
         sizeStyles[size],
         style,
       ]}
@@ -47,7 +49,7 @@ export const ThemedButton: React.FC<ThemedButtonProps> = ({
 
 const styles = StyleSheet.create({
   button: {
-    backgroundColor: "#6200ee",
+    backgroundColor: Colors.dark.primary,
     borderRadius: 8,
     paddingVertical: 10,
     paddingHorizontal: 20,
@@ -56,6 +58,9 @@ const styles = StyleSheet.create({
   },
   secondaryButton: {
     backgroundColor: "#03dac6",
+  },
+  ghost: {
+    backgroundColor: "transparent",
   },
   buttonText: {
     color: "#ffffff",
