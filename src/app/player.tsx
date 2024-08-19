@@ -1,7 +1,4 @@
-import {
-  default as musicDefaultImage,
-  default as UnknownTrack,
-} from "@/assets/images/unknown_track.png";
+import musicDefaultImage from "@/assets/images/unknown_track.png";
 import { MovingText, PlayerControls } from "@/components/player";
 import PlayerFeatures from "@/components/player/player-features";
 import { ThemedText } from "@/components/ThemedText";
@@ -68,7 +65,7 @@ const AudioPlayer = () => {
               source={
                 activeTrack && activeTrack.artwork
                   ? activeTrack.artwork
-                  : UnknownTrack
+                  : musicDefaultImage
               }
               contentFit="cover"
               transition={1000}
