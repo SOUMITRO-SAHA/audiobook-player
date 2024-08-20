@@ -4,7 +4,7 @@ import { ToastAndroid } from "react-native";
 import { useAppStore } from "@/store";
 
 export const seedDefaultAccount = async () => {
-  const { setLoading } = useAppStore();
+  const { setLoading } = useAppStore.getState();
   try {
     const response = await db.insert(account).values({
       username: "Guest",
