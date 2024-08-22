@@ -1,4 +1,5 @@
 import { ThemedScreen, ThemedText, ThemedView } from "@/components";
+import { FastImageComponent } from "@/components/image";
 import { Colors } from "@/constants";
 import { db } from "@/lib/db";
 import { wishlist } from "@/lib/db/schema";
@@ -6,12 +7,11 @@ import { sleep } from "@/lib/utils";
 import { Entypo, EvilIcons } from "@expo/vector-icons";
 import { eq } from "drizzle-orm";
 import { useRouter } from "expo-router";
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useState } from "react";
 import {
   ActivityIndicator,
   FlatList,
   GestureResponderEvent,
-  Image,
   StyleSheet,
   ToastAndroid,
   TouchableOpacity,
@@ -151,7 +151,7 @@ const WishListPage = () => {
         >
           <ThemedView style={styles.cardContent}>
             {item.coverImage && (
-              <Image
+              <FastImageComponent
                 source={{ uri: item.coverImage }}
                 style={styles.coverImage}
               />

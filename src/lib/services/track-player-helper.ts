@@ -2,7 +2,7 @@ import { usePlaylistStore } from "@/store";
 import { Asset } from "expo-media-library";
 import TrackPlayer, { RepeatMode, Track } from "react-native-track-player";
 import { upsertSingleTrack } from "../db/mutation";
-import { extractLocalUrl, retryAsyncOperation } from "../utils";
+import { extractLocalUrl, retryAsyncOperation, sleep } from "../utils";
 import { fetchBookInfo } from "./fetch-book-info";
 
 /**
@@ -169,6 +169,7 @@ export const addTracks = async ({
     await TrackPlayer.add(trackObjects);
     await TrackPlayer.setRepeatMode(RepeatMode.Queue);
 
+    await sleep(10);
     if (shouldPlay) await TrackPlayer.play();
   } catch (error) {
     console.error("Failed to add and play tracks:", error);

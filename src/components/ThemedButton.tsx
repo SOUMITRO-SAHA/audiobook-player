@@ -1,4 +1,5 @@
 import { Colors } from "@/constants";
+import { cn } from "@/lib/utils";
 import React from "react";
 import {
   TouchableOpacity,
@@ -16,6 +17,7 @@ interface ThemedButtonProps {
   style?: ViewStyle;
   textStyle?: TextStyle;
   children?: React.ReactNode; // Add the children prop
+  className?: string;
 }
 
 export const ThemedButton: React.FC<ThemedButtonProps> = ({
@@ -26,6 +28,7 @@ export const ThemedButton: React.FC<ThemedButtonProps> = ({
   style,
   textStyle,
   children,
+  className,
 }) => {
   return (
     <TouchableOpacity
@@ -36,6 +39,7 @@ export const ThemedButton: React.FC<ThemedButtonProps> = ({
         sizeStyles[size],
         style,
       ]}
+      className={cn("", className)}
       onPress={onPress}
     >
       {children ? (

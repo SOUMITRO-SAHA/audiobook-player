@@ -6,8 +6,8 @@ import { useActiveTrack } from "react-native-track-player";
 import { ThemedView } from "../ThemedView";
 import { MovingText } from "./moving-text";
 import { PlayPauseButton, SkipToNextButton } from "./player-control";
-import { Image } from "expo-image";
 import { useSegments } from "expo-router";
+import { FastImageComponent } from "../image";
 
 export type FloatingPlayerProps = {
   onNavigate: () => void;
@@ -32,7 +32,7 @@ export const FloatingPlayer = ({ onNavigate }: FloatingPlayerProps) => {
         <View className="flex flex-row items-center space-x-2 max-w-[80%]">
           <View className="w-12 h-12 bg-transparent rounded">
             {activeTrack.artwork ? (
-              <Image
+              <FastImageComponent
                 source={activeTrack.artwork}
                 style={[
                   {

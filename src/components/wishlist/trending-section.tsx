@@ -1,16 +1,11 @@
 import { useRouter } from "expo-router";
 import React from "react";
-import {
-  Image,
-  ScrollView,
-  StyleSheet,
-  TouchableOpacity,
-  View,
-} from "react-native";
+import { ScrollView, StyleSheet, TouchableOpacity, View } from "react-native";
 
+import { Book } from "@/types/book";
+import { FastImageComponent } from "../image";
 import { ThemedText } from "../ThemedText";
 import { ThemedView } from "../ThemedView";
-import { Book } from "@/types/book";
 
 export const TrendingSection = ({ books }: { books: Book[] }) => {
   const router = useRouter();
@@ -33,10 +28,9 @@ export const TrendingSection = ({ books }: { books: Book[] }) => {
             onPress={() => handlePress(book)}
           >
             <View>
-              <Image
+              <FastImageComponent
                 source={{ uri: book.coverImage }}
                 style={styles.coverImage}
-                resizeMode="cover"
               />
               <ThemedText style={styles.bookTitle} numberOfLines={1}>
                 {book.title}

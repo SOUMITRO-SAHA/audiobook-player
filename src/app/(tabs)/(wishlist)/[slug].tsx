@@ -4,6 +4,7 @@ import {
   ThemedText,
   ThemedView,
 } from "@/components";
+import { FastImageComponent } from "@/components/image";
 import { Colors } from "@/constants";
 import { useAppContext } from "@/context/AppContext";
 import { db } from "@/lib/db";
@@ -13,12 +14,7 @@ import { Feather, FontAwesome6 } from "@expo/vector-icons";
 import { eq } from "drizzle-orm";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import * as React from "react";
-import {
-  ActivityIndicator,
-  Image,
-  StyleSheet,
-  ToastAndroid,
-} from "react-native";
+import { ActivityIndicator, StyleSheet, ToastAndroid } from "react-native";
 import { ScrollView, TouchableOpacity } from "react-native-gesture-handler";
 
 const BookInfoScreen = () => {
@@ -122,12 +118,11 @@ const BookInfoScreen = () => {
       >
         <ThemedView style={styles.container}>
           {/* Book Cover Image */}
-          <Image
+          <FastImageComponent
             source={{
               uri: book?.coverImage || "https://via.placeholder.com/150",
             }}
             style={styles.coverImage}
-            resizeMode="cover"
           />
 
           {/* Book Title */}
@@ -185,10 +180,10 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   coverImage: {
-    width: 150,
+    // width: 150,
     height: 250,
-    borderRadius: 8,
-    marginBottom: 16,
+    // borderRadius: 8,
+    marginBottom: 18,
   },
   title: {
     fontSize: 24,

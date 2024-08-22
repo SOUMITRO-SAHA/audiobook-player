@@ -1,10 +1,10 @@
 import { useRouter } from "expo-router";
 import React from "react";
-import { FlatList, Image, StyleSheet, TouchableOpacity } from "react-native";
+import { FlatList, StyleSheet, TouchableOpacity } from "react-native";
 
+import { ThemedText, ThemedView } from "@/components";
 import { Book } from "@/types/book";
-import { ThemedText } from "@/components";
-import { ThemedView } from "@/components";
+import { FastImageComponent } from "../image";
 
 interface WishListFlatlistProps {
   data: Book[];
@@ -30,7 +30,7 @@ export const WishListFlatlist: React.FC<WishListFlatlistProps> = ({ data }) => {
       >
         <ThemedView style={styles.cardContent}>
           {item.coverImage && (
-            <Image
+            <FastImageComponent
               source={{ uri: item.coverImage }}
               style={styles.coverImage}
             />

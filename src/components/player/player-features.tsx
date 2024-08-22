@@ -1,5 +1,5 @@
 import { Colors } from "@/constants";
-import { useSleepTimer } from "@/hooks/useSleepTimer";
+import useSleepTimer from "@/hooks/useSleepTimer";
 import { db } from "@/lib/db";
 import { playbackSettings, timestamp } from "@/lib/db/schema";
 import { formatTime } from "@/lib/utils";
@@ -20,6 +20,7 @@ import {
 } from "react-native";
 import TrackPlayer, {
   useActiveTrack,
+  useIsPlaying,
   useProgress,
 } from "react-native-track-player";
 import { ThemedText } from "../ThemedText";
@@ -41,7 +42,7 @@ const timerOptions = [
   { label: "60 mins", value: 60 },
   { label: "1h30m", value: 90 },
   { label: "2hr", value: 120 },
-  { label: "End of this Chapter", value: null },
+  // { label: "End of this Chapter", value: null },
   // Add "End Of Chapter" logic here
 ];
 
@@ -49,13 +50,13 @@ const PlayerFeatures = () => {
   // Hooks
   const { position } = useProgress();
   const activeTrack = useActiveTrack();
+  const { playing } = useIsPlaying();
 
   // Store
   const { playbackSpeed, setPlaybackSpeed } = usePlaylistStore();
 
   // Timer
   const [timer, setTimer] = React.useState<number | null>(null);
-  const timerRef = React.useRef<BottomSheetModal>(null);
 
   // Time Stamp
   const [showTimeStamp, setShowTimeStamp] = React.useState(false);
@@ -64,18 +65,29 @@ const PlayerFeatures = () => {
   const [currentTimeStampPosition, setCurrentTimeStampPosition] =
     React.useState(0);
   const [timeStampLoading, setTimeStampLoading] = React.useState(false);
-  const speedRef = React.useRef<BottomSheetModal>(null);
 
-  // Hooks
-  const { startTimer, cancelTimer } = useSleepTimer();
+  // Refs
+  const speedRef = React.useRef<BottomSheetModal>(null);
+  const timerRef = React.useRef<BottomSheetModal>(null);
+
+  // Calling Timer Hook
+  useSleepTimer(timer);
 
   const handleTimerSelect = (time: number | null) => {
     if (time === null) {
-      // End of this chapter logic
+      // TODO: End of this chapter logic
     } else {
-      startTimer(time);
-      ToastAndroid.show("Timer set for " + time, ToastAndroid.LONG);
-      timerRef.current?.close();
+      if (playing) {
+        setTimer(time);
+
+        ToastAndroid.show("Timer set for " + time, ToastAndroid.LONG);
+        timerRef.current?.close();
+      } else {
+        ToastAndroid.show(
+          "Cannot set timer while Player paused",
+          ToastAndroid.SHORT
+        );
+      }
     }
   };
 
@@ -274,7 +286,7 @@ const PlayerFeatures = () => {
       </BottomSheet>
 
       {/* Bottom Sheet | Sleeping Timer */}
-      <BottomSheet ref={timerRef} initialPosition={35}>
+      <BottomSheet ref={timerRef} initialPosition={48}>
         <View style={{ width: "100%", gap: 10 }}>
           {timerOptions.map((option) => (
             <TouchableOpacity
@@ -282,7 +294,7 @@ const PlayerFeatures = () => {
               onPress={() => handleTimerSelect(option.value)}
             >
               <Text
-                className="w-full text-center bg-slate-700"
+                className="w-full text-center bg-slate-500"
                 style={{
                   color: Colors.dark.text,
                   padding: 5,
@@ -294,6 +306,24 @@ const PlayerFeatures = () => {
               </Text>
             </TouchableOpacity>
           ))}
+          <TouchableOpacity
+            onPress={() => {
+              timerRef.current?.close();
+            }}
+          >
+            <Text
+              className="w-full text-center"
+              style={{
+                color: Colors.dark.text,
+                backgroundColor: Colors.dark.primary,
+                padding: 5,
+                borderRadius: 10,
+                fontSize: 18,
+              }}
+            >
+              Close
+            </Text>
+          </TouchableOpacity>
         </View>
       </BottomSheet>
 

@@ -1,5 +1,4 @@
 import { AntDesign, Ionicons } from "@expo/vector-icons";
-import { Image } from "expo-image";
 import { Asset } from "expo-media-library";
 import {
   useFocusEffect,
@@ -23,6 +22,7 @@ import {
   ThemedText,
   ThemedView,
 } from "@/components";
+import { FastImageComponent } from "@/components/image";
 import { TrackList } from "@/components/track";
 import { Colors } from "@/constants";
 import { db } from "@/lib/db";
@@ -272,37 +272,32 @@ const LibraryContentScreen = () => {
           <ThemedView
             className={cn("mx-auto mb-8 rounded-xl", coverImage ? "" : "p-3")}
             style={{
-              backgroundColor: Colors.dark.primary,
+              backgroundColor: Colors.dark.background,
             }}
           >
             {resetMainCoverImage && (
               <ThemedButton
+                className="bg-black/20"
                 onPress={handleResetMainCoverImage}
                 variant="ghost"
-                size="icon"
+                size="sm"
                 style={{
                   position: "absolute",
-                  top: 0,
-                  right: 0,
+                  top: 2,
+                  right: 20,
                   zIndex: 10,
-                  paddingHorizontal: 10,
                 }}
               >
                 <Ionicons name="reload" size={24} color={Colors.dark.text} />
               </ThemedButton>
             )}
-            <Image
+            <FastImageComponent
               source={coverImage || musicDefaultImage}
               style={[
                 styles.coverImage,
-                coverImage
-                  ? {
-                      resizeMode: "cover",
-                    }
-                  : {
-                      resizeMode: "contain",
-                      marginTop: 20,
-                    },
+                !coverImage && {
+                  marginTop: 20,
+                },
               ]}
             />
 

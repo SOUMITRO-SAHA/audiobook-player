@@ -1,7 +1,6 @@
 import { BottomSheetModalProvider } from "@gorhom/bottom-sheet";
 import { drizzle } from "drizzle-orm/expo-sqlite";
 import { useMigrations } from "drizzle-orm/expo-sqlite/migrator";
-import * as BackgroundFetch from "expo-background-fetch";
 import { useFonts } from "expo-font";
 import { Stack, useRouter } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
@@ -21,12 +20,11 @@ import {
   ThemedView,
 } from "@/components";
 import ParallaxScrollView from "@/components/ParallaxScrollView";
-import { FloatingPlayer } from "@/components/player";
 import { Colors, DEFAULT_DATABASE_NAME } from "@/constants";
 import AppContextProvider from "@/context/AppContext";
 import useLoadLastPlayTrack from "@/hooks/useLoadLastPlayTrack";
 import migrations from "@/lib/db/drizzle/migrations";
-import { BACKGROUND_TASK_NAME } from "@/lib/services/background-tasks";
+
 import {
   GetPermissionStatus,
   RequestForStoragePermissions,
@@ -38,6 +36,8 @@ import {
   useSetupTrackPlayer,
 } from "@/lib/services/track-player-service";
 import { useTrackPlayerStore } from "@/store";
+import { useBackgroundTimeStamp } from "@/hooks/useBackgroundTimeStamp";
+import { trackActiveTimeStampInForeground } from "@/lib/services/process-data";
 
 // Database Connector
 const expoDb = openDatabaseSync(DEFAULT_DATABASE_NAME);
@@ -59,21 +59,8 @@ export default function RootLayout() {
   // Register the Logs for Track Player
   useLogTrackPlayerState();
 
-  React.useEffect(() => {
-    const registerTask = async () => {
-      try {
-        await BackgroundFetch.registerTaskAsync(BACKGROUND_TASK_NAME, {
-          minimumInterval: 60, // 1 minute
-          stopOnTerminate: false,
-          startOnBoot: true,
-        });
-        console.log("Task registered successfully");
-      } catch (error) {
-        console.error("Task registration failed:", error);
-      }
-    };
-    registerTask();
-  }, []);
+  // Registering the Background Service for updating the time stamp while the player is running in the foreground
+  trackActiveTimeStampInForeground();
 
   React.useEffect(() => {
     if (!isTrackPlayerRegistered) {
@@ -90,7 +77,9 @@ export default function RootLayout() {
     const handleDeepLink = (event: { url: string }) => {
       const { url } = event;
       if (url.includes("trackplayer://notification.click")) {
-        router.navigate("/player");
+        router.navigate({
+          pathname: "player",
+        });
       }
     };
 
@@ -120,11 +109,8 @@ function App() {
   const { success, error } = useMigrations(db, migrations);
   useLoadLastPlayTrack();
 
-  const router = useRouter();
-
-  const handleNavigate = () => {
-    router.navigate("/player");
-  };
+  // Registering the Background Service for updating the time stamp while the player is running in the background
+  useBackgroundTimeStamp();
 
   React.useEffect(() => {
     (async () => {
@@ -190,9 +176,6 @@ function App() {
                   />
                   <Stack.Screen name="+not-found" />
                 </Stack>
-
-                {/* Floating Player */}
-                <FloatingPlayer onNavigate={handleNavigate} />
               </SQLiteProvider>
             </React.Suspense>
           </BottomSheetModalProvider>
