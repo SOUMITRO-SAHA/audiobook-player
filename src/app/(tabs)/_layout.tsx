@@ -1,4 +1,3 @@
-import { FloatingPlayer } from "@/components/player";
 import { Colors, fontSize } from "@/constants";
 import { AntDesign } from "@expo/vector-icons";
 import Entypo from "@expo/vector-icons/Entypo";
@@ -9,15 +8,6 @@ import React from "react";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 
 export default function TabLayout() {
-  const router = useRouter();
-
-  const handleFloatingPlayerPress = async () => {
-    // Navigate to the search screen
-    router.navigate({
-      pathname: "player",
-    });
-  };
-
   return (
     <SafeAreaProvider
       style={{
@@ -102,11 +92,13 @@ export default function TabLayout() {
             ),
           }}
         />
+        <Tabs.Screen
+          name="player"
+          options={{
+            tabBarButton: () => null,
+          }}
+        />
       </Tabs>
-
-      {/* Floating Player */}
-
-      <FloatingPlayer onNavigate={handleFloatingPlayerPress} />
     </SafeAreaProvider>
   );
 }

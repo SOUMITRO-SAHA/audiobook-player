@@ -1,6 +1,7 @@
 import { BottomSheetModalProvider } from "@gorhom/bottom-sheet";
 import { drizzle } from "drizzle-orm/expo-sqlite";
 import { useMigrations } from "drizzle-orm/expo-sqlite/migrator";
+import * as BackgroundFetch from "expo-background-fetch";
 import { useFonts } from "expo-font";
 import { Stack, useRouter } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
@@ -20,10 +21,12 @@ import {
   ThemedView,
 } from "@/components";
 import ParallaxScrollView from "@/components/ParallaxScrollView";
+import { FloatingPlayer } from "@/components/player";
 import { Colors, DEFAULT_DATABASE_NAME } from "@/constants";
 import AppContextProvider from "@/context/AppContext";
 import useLoadLastPlayTrack from "@/hooks/useLoadLastPlayTrack";
 import migrations from "@/lib/db/drizzle/migrations";
+import { BACKGROUND_TASK_NAME } from "@/lib/services/background-tasks";
 import {
   GetPermissionStatus,
   RequestForStoragePermissions,
@@ -44,58 +47,56 @@ const db = drizzle(expoDb);
 SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
-  // Store
   const { isSetup, isTrackPlayerRegistered, setRegisterTrackPlayer } =
     useTrackPlayerStore();
-
-  // Router
   const router = useRouter();
 
-  // Initialize the `React-Native-Track-Player`
-  const handleTrackPlayerLoaded = React.useCallback(() => {
-    SplashScreen.hideAsync();
-  }, []);
-
+  // Initialize the Track Player
   useSetupTrackPlayer({
-    onLoad: handleTrackPlayerLoaded,
+    onLoad: () => SplashScreen.hideAsync(),
   });
 
-  // Register the Logs for `React-Native-Track-Player`
+  // Register the Logs for Track Player
   useLogTrackPlayerState();
 
-  // Side Effects
   React.useEffect(() => {
-    (async () => {
+    const registerTask = async () => {
       try {
-        if (!isTrackPlayerRegistered) {
-          TrackPlayer.registerPlaybackService(() => PlaybackService);
+        await BackgroundFetch.registerTaskAsync(BACKGROUND_TASK_NAME, {
+          minimumInterval: 60, // 1 minute
+          stopOnTerminate: false,
+          startOnBoot: true,
+        });
+        console.log("Task registered successfully");
+      } catch (error) {
+        console.error("Task registration failed:", error);
+      }
+    };
+    registerTask();
+  }, []);
 
-          // Updating the Status
-          setRegisterTrackPlayer(true);
-        }
+  React.useEffect(() => {
+    if (!isTrackPlayerRegistered) {
+      try {
+        TrackPlayer.registerPlaybackService(() => PlaybackService);
+        setRegisterTrackPlayer(true);
       } catch (error) {
         console.error("Error registering Playback service: ", error);
       }
-    })();
-  }, []);
+    }
+  }, [isTrackPlayerRegistered, setRegisterTrackPlayer]);
 
   React.useEffect(() => {
-    const handleDeepLink = async (event: { url: string }) => {
+    const handleDeepLink = (event: { url: string }) => {
       const { url } = event;
       if (url.includes("trackplayer://notification.click")) {
-        // router.dismissAll(); // This will prevent `rntp` default navigation
-
-        // Navigate to the Player screen
-        router.navigate({
-          pathname: "player",
-        });
+        router.navigate("/player");
       }
     };
 
     Linking.addEventListener("url", handleDeepLink);
   }, [router]);
 
-  // Renders
   if (!isSetup) {
     return (
       <ThemedScreen>
@@ -116,24 +117,21 @@ function App() {
     SpaceMono: require("@/assets/fonts/SpaceMono-Regular.ttf"),
   });
 
-  // Drizzle
   const { success, error } = useMigrations(db, migrations);
-
-  // Initiate the loadLastPlayed Tracks
   useLoadLastPlayTrack();
 
-  // Side Effects
+  const router = useRouter();
+
+  const handleNavigate = () => {
+    router.navigate("/player");
+  };
+
   React.useEffect(() => {
     (async () => {
-      // First Check for Permission Status
       const { granted } = await GetPermissionStatus();
-
       if (!granted) {
-        // Request for Storage Permissions
         const permission = await RequestForStoragePermissions();
-
         if (permission.granted) {
-          // Then Call the Setup
           await setupApplication();
         }
       }
@@ -146,7 +144,6 @@ function App() {
     }
   }, [loaded]);
 
-  // Renders
   if (!loaded) {
     return (
       <ParallaxScrollView>
@@ -187,19 +184,15 @@ function App() {
                     name="(tabs)"
                     options={{ headerShown: false }}
                   />
-                  <Stack.Screen name="+not-found" />
-
                   <Stack.Screen
                     name="player"
-                    options={{
-                      presentation: "card",
-                      gestureEnabled: true,
-                      gestureDirection: "vertical",
-                      animationDuration: 400,
-                      headerShown: false,
-                    }}
+                    options={{ headerShown: false }}
                   />
+                  <Stack.Screen name="+not-found" />
                 </Stack>
+
+                {/* Floating Player */}
+                <FloatingPlayer onNavigate={handleNavigate} />
               </SQLiteProvider>
             </React.Suspense>
           </BottomSheetModalProvider>

@@ -7,6 +7,7 @@ import { ThemedView } from "../ThemedView";
 import { MovingText } from "./moving-text";
 import { PlayPauseButton, SkipToNextButton } from "./player-control";
 import { Image } from "expo-image";
+import { useSegments } from "expo-router";
 
 export type FloatingPlayerProps = {
   onNavigate: () => void;
@@ -15,11 +16,15 @@ export type FloatingPlayerProps = {
 export const FloatingPlayer = ({ onNavigate }: FloatingPlayerProps) => {
   const activeTrack = useActiveTrack();
 
+  const segments = useSegments();
+
   const handleButtonPress = () => {
     onNavigate?.();
   };
 
-  if (!activeTrack) return null;
+  // Hide the floating player when on the player screen
+  const isPlayerScreen = segments[segments.length - 1] === "player";
+  if (!activeTrack || isPlayerScreen) return null;
 
   return (
     <View className="absolute p-2 px-5 rounded-xl" style={styles.container}>

@@ -11,7 +11,7 @@ const WishListScreenLayout = () => {
         }}
       />
       <Stack.Screen
-        name="[param]"
+        name="[slug]"
         options={{
           headerShown: false,
         }}

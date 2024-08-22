@@ -29,3 +29,7 @@ expo-env.d.ts
 
 # TODO
 TODO.md
+
+# Builds | Expo Builds
+/local-builds
+build*

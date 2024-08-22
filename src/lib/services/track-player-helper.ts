@@ -1,11 +1,7 @@
 import { usePlaylistStore } from "@/store";
 import { Asset } from "expo-media-library";
 import TrackPlayer, { RepeatMode, Track } from "react-native-track-player";
-import {
-  createPlaylistItems,
-  upsertSingleTrack,
-  upsertTracks,
-} from "../db/mutation";
+import { upsertSingleTrack } from "../db/mutation";
 import { extractLocalUrl, retryAsyncOperation } from "../utils";
 import { fetchBookInfo } from "./fetch-book-info";
 

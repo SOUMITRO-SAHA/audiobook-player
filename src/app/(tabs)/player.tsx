@@ -9,6 +9,7 @@ import { defaultStyles } from "@/styles";
 import { Feather } from "@expo/vector-icons";
 import { Image } from "expo-image";
 import { LinearGradient } from "expo-linear-gradient";
+import { useNavigation, useRouter } from "expo-router";
 import * as React from "react";
 import { ActivityIndicator, StyleSheet, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -19,6 +20,14 @@ const AudioPlayer = () => {
   const { top, bottom } = useSafeAreaInsets();
   const activeTrack = useActiveTrack();
   const { playing } = useIsPlaying();
+
+  const navigate = useNavigation();
+
+  React.useLayoutEffect(() => {
+    navigate.setOptions({
+      tabBarStyle: { display: "none" }, // Hide the tab bar
+    });
+  }, [navigate]);
 
   // Background Color
   const activeImageBackgroundColor = useBackgroundImageColor(
