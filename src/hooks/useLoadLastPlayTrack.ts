@@ -22,10 +22,10 @@ const useLoadLastPlayTrack = () => {
 
         if (lastActiveTrack) {
           const currentTrack: Track = {
-            url: lastActiveTrack.uri,
+            url: lastActiveTrack.url,
             duration: Number(lastActiveTrack.duration),
-            title: lastActiveTrack.name,
-            album: lastActiveTrack.name,
+            title: lastActiveTrack.title,
+            album: lastActiveTrack.album || "Unknown",
           };
 
           // Adding the track to the player
