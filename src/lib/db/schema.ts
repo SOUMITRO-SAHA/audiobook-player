@@ -83,6 +83,16 @@ export const timestamp = sqliteTable("timestamp", {
   updatedAt: text("updated_at").default(sql`CURRENT_TIMESTAMP`),
 });
 
+// Track Section Table
+export const trackSection = sqliteTable("trackSection", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  timestamp: text("timestamp"),
+  title: text("title"),
+  trackUrl: text("track_url").notNull().unique(),
+  createdAt: text("created_at").default(sql`CURRENT_TIMESTAMP`),
+  updatedAt: text("updated_at").default(sql`CURRENT_TIMESTAMP`),
+});
+
 // Wishlist Table
 export const wishlist = sqliteTable("wishlist", {
   id: integer("id").primaryKey({ autoIncrement: true }),
