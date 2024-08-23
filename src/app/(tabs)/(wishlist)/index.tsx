@@ -21,9 +21,6 @@ const SearchScreen: React.FC<SearchScreenProps> = (props) => {
 
   // Side Effects
 
-  // Render
-  if (!trendingBooks.length) return null;
-
   return (
     <ThemedScreen>
       <ThemedView className="flex flex-row items-center justify-between space-x-5">
@@ -51,7 +48,9 @@ const SearchScreen: React.FC<SearchScreenProps> = (props) => {
       />
 
       {/* Trending List */}
-      <TrendingSection books={trendingBooks} />
+      {trendingBooks && trendingBooks.length > 0 && (
+        <TrendingSection books={trendingBooks} />
+      )}
 
       {/* List Items */}
       <WishListFlatlist data={searchedBooks} />
