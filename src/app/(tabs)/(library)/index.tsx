@@ -7,7 +7,7 @@ import { ReadDirItem } from "react-native-fs";
 import { ThemedScreen, ThemedText, ThemedView } from "@/components";
 import { TrackListItem } from "@/components/track";
 import { LibraryCard } from "@/components/ui";
-import { Colors } from "@/constants";
+import { Colors, DEFAULT_FOLDER_NAME } from "@/constants";
 import { readDefaultDirectory } from "@/lib/services/fs-worker";
 import { cn } from "@/lib/utils";
 import { useAppStore, usePlaylistStore } from "@/store";
@@ -125,8 +125,9 @@ export default function LibraryScreen() {
               {refreshCount <= 3 ? (
                 <>
                   <ThemedText className="my-3 text-xl text-center text-gray-400">
-                    Press the "+" button down below to add a new folder to the
-                    application
+                    Please add the audio files or folders to the "
+                    {DEFAULT_FOLDER_NAME}" folder located in the root directory
+                    of your storage.
                   </ThemedText>
                 </>
               ) : (
