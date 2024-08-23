@@ -1,4 +1,10 @@
+import { MaterialIcons } from "@expo/vector-icons";
+import { desc, eq, InferSelectModel } from "drizzle-orm";
+import { useFocusEffect, useRouter } from "expo-router";
+import * as React from "react";
 import { StyleSheet, View } from "react-native";
+import { TouchableOpacity } from "react-native-gesture-handler";
+import { useIsPlaying } from "react-native-track-player";
 
 import { ThemedScreen } from "@/components";
 import { HistorySection, WishListSection } from "@/components/home";
@@ -8,15 +14,8 @@ import { Colors } from "@/constants";
 import { db } from "@/lib/db";
 import { fetchAccount } from "@/lib/db/query";
 import { track, wishlist } from "@/lib/db/schema";
-import { useAppStore } from "@/store";
-import { Account } from "@/types/database";
-import { Ionicons, MaterialIcons } from "@expo/vector-icons";
-import { desc, eq, InferSelectModel } from "drizzle-orm";
-import * as React from "react";
-import { TouchableOpacity } from "react-native-gesture-handler";
-import { useIsPlaying } from "react-native-track-player";
 import { updateTimeStampOfActiveTrack } from "@/lib/services/process-data";
-import { useRouter } from "expo-router";
+import { Account } from "@/types/database";
 
 const DEFAULT_FOREGROUND_TIME = 2; // 2 Minutes
 
@@ -33,9 +32,6 @@ export default function HomeScreen() {
   const { playing } = useIsPlaying();
   const router = useRouter();
 
-  // Store
-  const { isLoading, reLoadApplication } = useAppStore();
-
   // Fetching Account
   const getAccount = React.useCallback(async () => {
     const res = await fetchAccount();
@@ -44,54 +40,50 @@ export default function HomeScreen() {
     }
   }, []);
 
-  // Side Effects
-  React.useEffect(() => {
-    const getTrackHistory = async () => {
-      // First Fetch Active Track
-      const lastPlayedTrack = await db.query.track.findMany({
-        where: eq(track.isPlaying, true),
-      });
+  // Fetching Track History and Wishlist
+  const getTrackHistory = React.useCallback(async () => {
+    const lastPlayedTrack = await db.query.track.findMany({
+      where: eq(track.isPlaying, true),
+    });
 
-      // Second Fetch Fetch Track order by last Played
-      const trackHistory = await db
-        .select()
-        .from(track)
-        .orderBy(desc(track.lastPlayed));
+    const trackHistory = await db
+      .select()
+      .from(track)
+      .orderBy(desc(track.lastPlayed));
 
-      const combinedHistory = [...lastPlayedTrack, ...trackHistory]?.filter(
-        ((set) => (t) => {
-          if (set.has(t.id)) {
-            return false;
-          }
-          set.add(t.id);
-          return true;
-        })(new Set<number>())
-      );
+    const combinedHistory = [...lastPlayedTrack, ...trackHistory]?.filter(
+      ((set) => (t) => {
+        if (set.has(t.id)) {
+          return false;
+        }
+        set.add(t.id);
+        return true;
+      })(new Set<number>())
+    );
 
-      setTrackHistory(combinedHistory);
-    };
-
-    const getWishlistItems = async () => {
-      const wishlistItems = await db.query.wishlist.findMany();
-      setWishlistItems(wishlistItems);
-    };
-
-    // Calling Account Update
-    const timestamp = setTimeout(() => {
-      getAccount();
-      getTrackHistory();
-      getWishlistItems();
-    }, 100);
-    return () => clearTimeout(timestamp);
+    setTrackHistory(combinedHistory);
   }, []);
 
-  React.useEffect(() => {
-    const timestamp = setTimeout(() => {
-      getAccount();
-    }, 100);
-    return () => clearTimeout(timestamp);
-  }, [isLoading]);
+  const getWishlistItems = React.useCallback(async () => {
+    const wishlistItems = await db.query.wishlist.findMany();
+    setWishlistItems(wishlistItems);
+  }, []);
 
+  // UseFocusEffect to run each time the screen is focused
+  useFocusEffect(
+    React.useCallback(() => {
+      const fetchData = async () => {
+        await getAccount();
+        await getTrackHistory();
+        await getWishlistItems();
+      };
+
+      const timeId = setTimeout(fetchData, 100);
+      return () => clearTimeout(timeId);
+    }, [getAccount, getTrackHistory, getWishlistItems])
+  );
+
+  // Track state updates
   React.useEffect(() => {
     if (playing) {
       const interval = setInterval(async () => {
@@ -108,25 +100,6 @@ export default function HomeScreen() {
         <ThemedText type="title" className="capitalize">{`Welcome, ${
           account?.username?.split(" ")[0]
         }`}</ThemedText>
-
-        <TouchableOpacity
-          onPress={() => {
-            reLoadApplication();
-          }}
-        >
-          <ThemedView
-            className="w-10 h-10 p-2 rounded-lg"
-            style={{
-              backgroundColor: Colors.dark.muted,
-            }}
-          >
-            <Ionicons
-              name="reload-outline"
-              size={24}
-              color={Colors.dark.foreground}
-            />
-          </ThemedView>
-        </TouchableOpacity>
       </ThemedView>
 
       {/* History Section */}
@@ -139,7 +112,7 @@ export default function HomeScreen() {
       </View>
 
       {/* Wishlist Section */}
-      {wishlistItems && (
+      {wishlistItems && wishlistItems.length > 0 && (
         <View>
           <View className="flex flex-row items-center justify-between w-full">
             <ThemedView className="flex flex-row items-center mb-2 space-x-2 text-xl">
