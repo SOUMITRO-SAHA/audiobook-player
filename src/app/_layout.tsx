@@ -25,6 +25,7 @@ import AppContextProvider from "@/context/AppContext";
 import useLoadLastPlayTrack from "@/hooks/useLoadLastPlayTrack";
 import migrations from "@/lib/db/drizzle/migrations";
 
+import { useBackgroundTimeStamp } from "@/hooks/useBackgroundTimeStamp";
 import {
   GetPermissionStatus,
   RequestForStoragePermissions,
@@ -36,8 +37,6 @@ import {
   useSetupTrackPlayer,
 } from "@/lib/services/track-player-service";
 import { useTrackPlayerStore } from "@/store";
-import { useBackgroundTimeStamp } from "@/hooks/useBackgroundTimeStamp";
-import { trackActiveTimeStampInForeground } from "@/lib/services/process-data";
 
 // Database Connector
 const expoDb = openDatabaseSync(DEFAULT_DATABASE_NAME);
@@ -58,9 +57,6 @@ export default function RootLayout() {
 
   // Register the Logs for Track Player
   useLogTrackPlayerState();
-
-  // Registering the Background Service for updating the time stamp while the player is running in the foreground
-  trackActiveTimeStampInForeground();
 
   React.useEffect(() => {
     if (!isTrackPlayerRegistered) {
@@ -107,6 +103,8 @@ function App() {
   });
 
   const { success, error } = useMigrations(db, migrations);
+
+  // This is load the last played track
   useLoadLastPlayTrack();
 
   // Registering the Background Service for updating the time stamp while the player is running in the background
