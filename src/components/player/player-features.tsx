@@ -1,9 +1,3 @@
-import { Colors } from "@/constants";
-import useSleepTimer from "@/hooks/useSleepTimer";
-import { db } from "@/lib/db";
-import { playbackSettings, timestamp } from "@/lib/db/schema";
-import { formatTime } from "@/lib/utils";
-import { usePlaylistStore } from "@/store";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { BottomSheetModal, TouchableOpacity } from "@gorhom/bottom-sheet";
 import { and, eq } from "drizzle-orm";
@@ -23,6 +17,13 @@ import TrackPlayer, {
   useIsPlaying,
   useProgress,
 } from "react-native-track-player";
+
+import { Colors } from "@/constants";
+import useSleepTimer from "@/hooks/useSleepTimer";
+import { db } from "@/lib/db";
+import { playbackSettings, timestamp } from "@/lib/db/schema";
+import { formatTime } from "@/lib/utils";
+import { usePlaylistStore } from "@/store";
 import { ThemedText } from "../ThemedText";
 import { ThemedView } from "../ThemedView";
 import { BottomSheet } from "../bottom-sheet";
@@ -48,7 +49,7 @@ const timerOptions = [
 
 const PlayerFeatures = () => {
   // Hooks
-  const { position } = useProgress();
+  const { position, duration } = useProgress();
   const activeTrack = useActiveTrack();
   const { playing } = useIsPlaying();
 
@@ -75,7 +76,9 @@ const PlayerFeatures = () => {
 
   const handleTimerSelect = (time: number | null) => {
     if (time === null) {
-      // TODO: End of this chapter logic
+      // INFO: Will do this later | Priority -1
+      // const remainingTimeInSeconds = Math.abs(duration - position);
+      // setTimer(remainingTimeInSeconds / 60);
     } else {
       if (playing) {
         setTimer(time);
