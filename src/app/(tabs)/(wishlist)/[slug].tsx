@@ -16,11 +16,15 @@ import { useLocalSearchParams, useRouter } from "expo-router";
 import * as React from "react";
 import { ActivityIndicator, StyleSheet, ToastAndroid } from "react-native";
 import { ScrollView, TouchableOpacity } from "react-native-gesture-handler";
+import { useIsPlaying } from "react-native-track-player";
 
 const BookInfoScreen = () => {
   const [loading, setLoading] = React.useState(false);
   const [alreadyInWishList, setAlreadyInWishList] =
     React.useState<boolean>(false);
+
+  // Hook
+  const { playing } = useIsPlaying();
 
   const { getBookById } = useAppContext();
   const { id } = useLocalSearchParams();
@@ -113,7 +117,8 @@ const BookInfoScreen = () => {
 
       <ScrollView
         className={cn(
-          book && book.description && book.description?.length > 300 && "mb-32"
+          book && book.description && book.description?.length > 300 && "mb-32",
+          playing && "mb-44"
         )}
       >
         <ThemedView style={styles.container}>
