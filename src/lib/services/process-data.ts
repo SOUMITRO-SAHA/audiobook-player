@@ -11,12 +11,9 @@ const DEFAULT_INTERVAL = 2; // 2 minutes in milliseconds
  * @param interval Interval in minutes (optional, defaults to 2)
  * @param retryCount Number of retries for failed updates (optional, defaults to 10)
  */
-export const trackActiveTimeStampInBackground = async ({
-  interval = DEFAULT_INTERVAL,
+export const updateTimeStampOfActiveTrack = async ({
   retryCount = 10,
 } = {}) => {
-  const minutes = interval * 60 * 1000;
-
   const updateLoop = async () => {
     let attempts = 0;
     while (attempts < retryCount) {
@@ -38,41 +35,6 @@ export const trackActiveTimeStampInBackground = async ({
   };
 
   return updateLoop();
-};
-
-/**
- * This function updates the timestamp of the active track in a foreground loop
- * with retry mechanism for failed updates.
- * @param interval Interval in minutes (optional, defaults to 2)
- * @param retryCount Number of retries for failed updates (optional, defaults to 10)
- */
-export const trackActiveTimeStampInForeground = async ({
-  interval = DEFAULT_INTERVAL,
-  retryCount = 10,
-} = {}) => {
-  const minutes = interval * 60 * 1000;
-
-  const updateLoop = async () => {
-    let attempts = 0;
-    while (attempts < retryCount) {
-      try {
-        await updateActiveTimeStamp();
-        return;
-      } catch (error) {
-        attempts++;
-        console.error(
-          `Error updating timestamp (attempt ${attempts}/${retryCount})`,
-          error
-        );
-        if (attempts === retryCount) {
-          console.error("Failed to update timestamp after all retries.");
-          ToastAndroid.show("Failed to update timestamp", ToastAndroid.LONG);
-        }
-      }
-    }
-  };
-
-  const timeId = setInterval(updateLoop, minutes);
 };
 
 /**
