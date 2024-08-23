@@ -1,4 +1,5 @@
 import musicDefaultImage from "@/assets/images/unknown_track.png";
+import { ThemedButton } from "@/components";
 import { FastImageComponent } from "@/components/image";
 import { MovingText, PlayerControls } from "@/components/player";
 import PlayerFeatures from "@/components/player/player-features";
@@ -7,18 +8,43 @@ import { ThemedView } from "@/components/ThemedView";
 import { Colors, screenPadding } from "@/constants";
 import { useBackgroundImageColor } from "@/hooks/useBackgroundImageColor";
 import { defaultStyles } from "@/styles";
-import { Feather } from "@expo/vector-icons";
+import { Feather, Octicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import * as React from "react";
-import { ActivityIndicator, StyleSheet, View } from "react-native";
+import { ActivityIndicator, Modal, StyleSheet, Text, View } from "react-native";
+import { FlatList, TouchableOpacity } from "react-native-gesture-handler";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { useActiveTrack, useIsPlaying } from "react-native-track-player";
+import TrackPlayer, {
+  Track,
+  useActiveTrack,
+  useIsPlaying,
+} from "react-native-track-player";
 
 const AudioPlayer = () => {
+  // States
+  const [shouldShowQueues, setShouldShowQueues] = React.useState(false);
+  const [queue, setQueue] = React.useState<Track[] | null>(null);
+
   // HOOKS
   const { top, bottom } = useSafeAreaInsets();
   const activeTrack = useActiveTrack();
   const { playing } = useIsPlaying();
+
+  // Side Effect
+  React.useEffect(() => {
+    const getQueue = async () => {
+      const queue = await TrackPlayer.getQueue();
+
+      if (queue && queue.length > 1) {
+        setQueue(queue);
+      } else {
+        // First Get the
+      }
+    };
+
+    const timeId = setTimeout(getQueue, 100);
+    return () => clearTimeout(timeId);
+  }, []);
 
   // Background Color
   const activeImageBackgroundColor = useBackgroundImageColor(
@@ -36,75 +62,119 @@ const AudioPlayer = () => {
   }
 
   return (
-    <LinearGradient
-      style={{ flex: 1 }}
-      colors={
-        activeImageBackgroundColor
-          ? [
-              activeImageBackgroundColor.primary,
-              activeImageBackgroundColor.secondary,
-            ]
-          : [Colors.dark.primary, Colors.dark.destructive]
-      }
-      start={{ x: 0, y: 0.1 }}
-    >
-      <View style={styles.overlayContainer}>
-        <DismissPlayerSymbol />
-        {activeTrack && (
-          <ThemedView
-            className="relative"
-            style={{
-              flex: 1,
-              marginTop: top,
-              marginBottom: bottom,
-              backgroundColor: "transparent",
-            }}
-          >
-            <FastImageComponent
-              style={styles.coverImage}
-              source={
-                activeTrack && activeTrack.artwork
-                  ? activeTrack.artwork
-                  : musicDefaultImage
-              }
-            />
-            <ThemedText
-              className="mt-3 text-center"
+    <>
+      <LinearGradient
+        style={{ flex: 1 }}
+        colors={
+          activeImageBackgroundColor
+            ? [
+                activeImageBackgroundColor.primary,
+                activeImageBackgroundColor.secondary,
+              ]
+            : [Colors.dark.primary, Colors.dark.destructive]
+        }
+        start={{ x: 0, y: 0.1 }}
+      >
+        <View style={styles.overlayContainer}>
+          <DismissPlayerSymbol />
+          {activeTrack && (
+            <ThemedView
+              className="relative"
               style={{
-                color: Colors.dark.text,
+                flex: 1,
+                marginTop: top,
+                marginBottom: bottom,
+                backgroundColor: "transparent",
               }}
             >
-              {activeTrack && activeTrack.album}
-              {activeTrack && ` | ${activeTrack.artist}`}
-            </ThemedText>
-
-            {/* Track Title */}
-            <View
-              style={styles.trackTitleContainer}
-              className="mx-auto space-x-2"
-            >
-              <Feather name="list" size={24} color={Colors.dark.foreground} />
-              <View
+              <FastImageComponent
+                style={styles.coverImage}
+                source={
+                  activeTrack && activeTrack.artwork
+                    ? activeTrack.artwork
+                    : musicDefaultImage
+                }
+              />
+              <ThemedText
+                className="mt-3 text-center"
                 style={{
-                  overflow: "hidden",
+                  color: Colors.dark.text,
                 }}
               >
-                <MovingText
-                  text={activeTrack.title as string}
-                  animationThreshold={30}
-                />
+                {activeTrack && activeTrack.album}
+                {activeTrack && ` | ${activeTrack.artist}`}
+              </ThemedText>
+
+              {/* Track Title */}
+              <View
+                style={styles.trackTitleContainer}
+                className="mx-auto space-x-2"
+              >
+                <TouchableOpacity
+                  activeOpacity={0.5}
+                  onPress={() => setShouldShowQueues((prev) => !prev)}
+                >
+                  <Feather
+                    name="list"
+                    size={24}
+                    color={Colors.dark.foreground}
+                  />
+                </TouchableOpacity>
+                <View
+                  style={{
+                    overflow: "hidden",
+                  }}
+                >
+                  <MovingText
+                    text={activeTrack.title as string}
+                    animationThreshold={30}
+                  />
+                </View>
               </View>
+
+              {/* Player Controls */}
+              <PlayerControls />
+
+              {/* Player Features */}
+              <PlayerFeatures />
+            </ThemedView>
+          )}
+        </View>
+      </LinearGradient>
+
+      {/* Modals */}
+      <Modal
+        visible={shouldShowQueues}
+        onRequestClose={() => setShouldShowQueues((prev) => !prev)}
+        animationType="fade"
+        transparent
+      >
+        <ThemedView className="flex items-center justify-center w-full h-full bg-transparent">
+          <ThemedView className="w-[90%] h-[80%] rounded-xl p-10 relative">
+            <View className="absolute top-0 right-0">
+              <ThemedButton
+                onPress={() => setShouldShowQueues((prev) => !prev)}
+                size="icon"
+                variant="ghost"
+              >
+                <Octicons name="x" size={24} color={Colors.dark.text} />
+              </ThemedButton>
             </View>
 
-            {/* Player Controls */}
-            <PlayerControls />
-
-            {/* Player Features */}
-            <PlayerFeatures />
+            <FlatList
+              data={queue}
+              renderItem={() => {
+                return (
+                  <View>
+                    <ThemedText>H</ThemedText>
+                  </View>
+                );
+              }}
+            />
           </ThemedView>
-        )}
-      </View>
-    </LinearGradient>
+        </ThemedView>
+      </Modal>
+    </>
   );
 };
 
