@@ -21,7 +21,7 @@ import TrackPlayer, {
 import { Colors } from "@/constants";
 import useSleepTimer from "@/hooks/useSleepTimer";
 import { db } from "@/lib/db";
-import { playbackSettings, timestamp } from "@/lib/db/schema";
+import { playbackSettings, timestamp, trackSection } from "@/lib/db/schema";
 import { formatTime } from "@/lib/utils";
 import { usePlaylistStore } from "@/store";
 import { ThemedText } from "../ThemedText";
@@ -110,18 +110,18 @@ const PlayerFeatures = () => {
 
   const getAllTimeStampsOfActiveTrack = async (retryCount = 0) => {
     if (!activeTrack) {
-      return; // No active track, nothing to do
+      return;
     }
 
     try {
-      const timeStamps = await db.query.timestamp.findMany({
+      const trackSection = await db.query.trackSection.findMany({
         where: eq(timestamp.trackUrl, activeTrack.url),
       });
 
-      if (timeStamps.length > 0) {
-        setCurrentTimeStampPosition(timeStamps.length);
+      if (trackSection.length > 0) {
+        setCurrentTimeStampPosition(trackSection.length);
       }
-      return timeStamps; // Successful retrieval
+      return trackSection;
     } catch (error) {
       console.error(error);
       if (error instanceof Error) {
@@ -135,7 +135,7 @@ const PlayerFeatures = () => {
         return getAllTimeStampsOfActiveTrack(retryCount + 1); // Retry
       } else {
         console.error("Failed to fetch timestamps after 5 retries.");
-        return []; // All retries failed, return empty array
+        return [];
       }
     }
   };
@@ -144,20 +144,20 @@ const PlayerFeatures = () => {
     async (retryCount = 0) => {
       setTimeStampLoading(true);
       if (!activeTrack) {
-        return; // No active track, nothing to save
+        return;
       }
 
       try {
-        // First checking whether this timestamp exists or not
-        const existingTimeStamp = await db.query.timestamp.findFirst({
+        // First checking whether this track Section exists or not
+        const existingTrackSection = await db.query.trackSection.findFirst({
           where: and(
             eq(timestamp.trackUrl, activeTrack.url),
             eq(timestamp.timestamp, String(lockedPosition))
           ),
         });
 
-        if (!existingTimeStamp) {
-          await db.insert(timestamp).values({
+        if (!existingTrackSection) {
+          await db.insert(trackSection).values({
             trackUrl: activeTrack.url,
             timestamp: String(lockedPosition),
             title: timeStampTitle,

@@ -7,8 +7,12 @@ import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
 import { Colors, screenPadding } from "@/constants";
 import { useBackgroundImageColor } from "@/hooks/useBackgroundImageColor";
+import { db } from "@/lib/db";
+import { trackSection } from "@/lib/db/schema";
+import { cn, formatTime, formatTimestamp } from "@/lib/utils";
 import { defaultStyles } from "@/styles";
 import { Feather, Octicons } from "@expo/vector-icons";
+import { eq, InferSelectModel } from "drizzle-orm";
 import { LinearGradient } from "expo-linear-gradient";
 import * as React from "react";
 import { ActivityIndicator, Modal, StyleSheet, Text, View } from "react-native";
@@ -24,6 +28,10 @@ const AudioPlayer = () => {
   // States
   const [shouldShowQueues, setShouldShowQueues] = React.useState(false);
   const [queue, setQueue] = React.useState<Track[] | null>(null);
+  const [trackSections, setTrackSections] = React.useState<
+    InferSelectModel<typeof trackSection>[] | null
+  >(null);
+  const [activeTab, setActiveTab] = React.useState<0 | 1>(0);
 
   // HOOKS
   const { top, bottom } = useSafeAreaInsets();
@@ -36,13 +44,24 @@ const AudioPlayer = () => {
       const queue = await TrackPlayer.getQueue();
 
       if (queue && queue.length > 1) {
+        setActiveTab(1);
         setQueue(queue);
-      } else {
-        // First Get the
       }
     };
 
-    const timeId = setTimeout(getQueue, 100);
+    const getTrackSections = async () => {
+      if (activeTrack) {
+        const trackSections = await db.query.trackSection.findMany({
+          where: eq(trackSection.trackUrl, activeTrack?.url),
+        });
+        setTrackSections(trackSections);
+      }
+    };
+
+    const timeId = setTimeout(() => {
+      getQueue();
+      getTrackSections();
+    }, 100);
     return () => clearTimeout(timeId);
   }, []);
 
@@ -150,7 +169,12 @@ const AudioPlayer = () => {
         transparent
       >
         <ThemedView className="flex items-center justify-center w-full h-full bg-transparent">
-          <ThemedView className="w-[90%] h-[80%] rounded-xl p-10 relative">
+          <ThemedView
+            className="w-[90%] h-[90%] rounded-xl p-10 relative"
+            style={{
+              backgroundColor: Colors.dark.muted,
+            }}
+          >
             <View className="absolute top-0 right-0">
               <ThemedButton
                 onPress={() => setShouldShowQueues((prev) => !prev)}
@@ -161,16 +185,104 @@ const AudioPlayer = () => {
               </ThemedButton>
             </View>
 
-            <FlatList
-              data={queue}
-              renderItem={() => {
-                return (
-                  <View>
-                    <ThemedText>H</ThemedText>
-                  </View>
-                );
-              }}
-            />
+            {/* Tabs */}
+            <View className="flex flex-row items-center justify-between mb-5">
+              <ThemedButton
+                onPress={() => {
+                  setActiveTab(0);
+                }}
+                style={{
+                  backgroundColor:
+                    activeTab === 0
+                      ? Colors.dark.primary
+                      : Colors.dark.mutedForeground,
+                }}
+                className={cn("w-[150px]")}
+              >
+                <ThemedText>Custom Section</ThemedText>
+              </ThemedButton>
+              <ThemedButton
+                onPress={() => {
+                  setActiveTab(1);
+                }}
+                style={{
+                  backgroundColor:
+                    activeTab === 1
+                      ? Colors.dark.primary
+                      : Colors.dark.mutedForeground,
+                }}
+                className="w-[100px]"
+              >
+                <ThemedText>Queue</ThemedText>
+              </ThemedButton>
+            </View>
+
+            {activeTab === 0 ? (
+              <FlatList
+                data={trackSections}
+                renderItem={({ item, index }) => {
+                  return (
+                    <View className="p-1 bg-slate-600 rounded-xl">
+                      <ThemedButton
+                        key={item.id}
+                        variant="ghost"
+                        onPress={async () => {
+                          if (item.timestamp)
+                            await TrackPlayer.seekTo(Number(item.timestamp));
+
+                          setShouldShowQueues((prev) => !prev);
+                        }}
+                      >
+                        <View className="flex flex-row items-center justify-between w-full space-x-5 ">
+                          <ThemedText>
+                            {item.title} {index + 1}
+                          </ThemedText>
+
+                          <ThemedText>
+                            {formatTime(Number(item.timestamp))}
+                          </ThemedText>
+                        </View>
+                      </ThemedButton>
+                    </View>
+                  );
+                }}
+                ListEmptyComponent={() => {
+                  return (
+                    <ThemedButton onPress={() => {}} variant="ghost">
+                      <ThemedText>No items in the queue.</ThemedText>
+                    </ThemedButton>
+                  );
+                }}
+              />
+            ) : (
+              <FlatList
+                data={queue}
+                renderItem={({ item, index }) => {
+                  return (
+                    <View className="flex my-2 space-y-5">
+                      <ThemedButton
+                        onPress={() => {}}
+                        variant="ghost"
+                        style={{
+                          backgroundColor: Colors.dark.background,
+                        }}
+                      >
+                        <ThemedText className="text-base">
+                          {item.title} {index + 1}
+                        </ThemedText>
+                      </ThemedButton>
+                    </View>
+                  );
+                }}
+                ListEmptyComponent={() => {
+                  return (
+                    <ThemedButton onPress={() => {}} variant="ghost">
+                      <ThemedText>No items in the queue.</ThemedText>
+                    </ThemedButton>
+                  );
+                }}
+              />
+            )}
           </ThemedView>
         </ThemedView>
       </Modal>
