@@ -1,6 +1,6 @@
 import * as BackgroundFetch from "expo-background-fetch";
 import * as TaskManager from "expo-task-manager";
-import { stopPlayer, trackActiveTimeStampInBackground } from "./process-data";
+import { stopPlayer, updateTimeStampOfActiveTrack } from "./process-data";
 
 export const BACKGROUND_TASKS = {
   TIMESTAMP: "TIMESTAMP_UPDATE_TASK",
@@ -10,7 +10,7 @@ export const BACKGROUND_TASKS = {
 // Define the task that runs in the background
 TaskManager.defineTask(BACKGROUND_TASKS.TIMESTAMP, async () => {
   try {
-    await trackActiveTimeStampInBackground();
+    await updateTimeStampOfActiveTrack();
 
     return BackgroundFetch.BackgroundFetchResult.NewData;
   } catch (error) {
