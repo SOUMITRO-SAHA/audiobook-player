@@ -17,6 +17,14 @@ export const upsertTracks = async (
   const allTracksInfo: UpsertTrackType[] = [];
 
   try {
+    // First Resetting the other active tracks
+    await db
+      .update(track)
+      .set({
+        isPlaying: false,
+      })
+      .where(eq(track.isPlaying, true));
+
     // Sort tracks by filename
     const sortedTracks = tracks
       .filter((i) => i.title)
@@ -30,7 +38,7 @@ export const upsertTracks = async (
 
     const responses = await Promise.all(
       sortedTracks.map((track) =>
-        retryAsyncOperation(() => upsertSingleTrack(track), 5)
+        retryAsyncOperation(() => upsertSingleTrack(track, false), 5)
       )
     );
 
@@ -49,41 +57,74 @@ export const upsertTracks = async (
     return allTracksInfo;
   }
 };
-
 export const upsertSingleTrack = async (
-  t: Track
+  t: Track,
+  shouldUpdatePreviousTracks: boolean = true
 ): Promise<{ id: number } | null> => {
   try {
-    const newTrackInDb = await db
-      .insert(track)
-      .values({
-        title: String(t.filename),
-        url: String(t.uri),
-        duration: String(t.duration),
-        artist: t.artist,
-        album: t.album,
-        artwork: t.artwork,
-
-        isPlaying: false,
-        lastPlayed: Date.now(),
-      })
-      .onConflictDoUpdate({
-        target: track.url,
-        set: {
-          title: String(t.filename),
-          url: String(t.uri),
-          duration: String(t.duration),
-          artist: t.artist,
-          album: t.album,
-          artwork: t.artwork,
-
+    if (shouldUpdatePreviousTracks) {
+      // Resetting other active tracks
+      await db
+        .update(track)
+        .set({
           isPlaying: false,
-          lastPlayed: Date.now(),
-        },
-      })
-      .returning({ id: track.id });
+        })
+        .where(eq(track.isPlaying, true));
+    }
 
-    return newTrackInDb?.[0] || null;
+    // First Check whether the track is already present or not:
+    const existingTrack = await db.query.track.findFirst({
+      where: eq(track.url, t.url),
+    });
+
+    if (!existingTrack) {
+      // Insert or update the track
+      const newTrackInDb = await db
+        .insert(track)
+        .values({
+          title: String(t.title),
+          url: String(t.url),
+          duration: String(t.duration),
+          artist: t.artist || null,
+          album: t.album || null,
+          artwork: t.artwork || null,
+          isPlaying: true,
+          lastPlayed: Date.now(),
+        })
+        .onConflictDoUpdate({
+          target: track.url,
+          set: {
+            title: String(t.title),
+            url: String(t.url),
+            duration: String(t.duration),
+            artist: t.artist || null,
+            album: t.album || null,
+            artwork: t.artwork || null,
+            isPlaying: true,
+            lastPlayed: Date.now(),
+          },
+        })
+        .returning({ id: track.id });
+
+      return newTrackInDb?.[0] || null;
+    } else {
+      // Just Update the track
+      const updatedTrack = await db
+        .update(track)
+        .set({
+          title: String(t.title),
+          url: String(t.url),
+          duration: String(t.duration),
+          artist: t.artist || null,
+          album: t.album || null,
+          artwork: t.artwork || null,
+          isPlaying: true,
+          lastPlayed: Date.now(),
+        })
+        .returning({ id: track.id });
+
+      return updatedTrack?.[0] || null;
+    }
   } catch (error) {
     console.error("Error upserting track:", error);
     return null;
