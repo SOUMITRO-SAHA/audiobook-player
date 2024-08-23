@@ -1,11 +1,17 @@
 import { getRandomGradient } from "@/components/gradients";
+import { FastImageComponent } from "@/components/image";
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
 import { Colors } from "@/constants";
+import { db } from "@/lib/db";
+import { playlist } from "@/lib/db/schema";
+import { getBookInfo } from "@/lib/services/fetch-book-info";
+import { extractName } from "@/lib/utils";
 import { Entypo } from "@expo/vector-icons";
+import { eq, InferSelectModel } from "drizzle-orm";
 import { LinearGradient } from "expo-linear-gradient";
 import { router } from "expo-router";
-import React, { useMemo } from "react";
+import React, { useMemo, useState } from "react";
 import { Pressable, StyleSheet, TouchableOpacity } from "react-native";
 import type { ReadDirItem } from "react-native-fs";
 
@@ -14,8 +20,27 @@ interface LibraryProps extends ReadDirItem {
 }
 
 export const LibraryCard: React.FC<LibraryProps> = (props) => {
+  const [playlistItem, setPlaylistItem] = useState<InferSelectModel<
+    typeof playlist
+  > | null>(null);
   // Memoization
   const color = useMemo(() => getRandomGradient(), []);
+
+  // Side Effect
+  React.useEffect(() => {
+    const getThePlaylist = async () => {
+      const existingPlaylist = await db.query.playlist.findFirst({
+        where: eq(playlist.name, props.name),
+      });
+
+      if (existingPlaylist) {
+        setPlaylistItem(existingPlaylist);
+      }
+    };
+
+    const timeId = setTimeout(getThePlaylist, 100);
+    return () => clearTimeout(timeId);
+  }, []);
 
   return (
     <TouchableOpacity
@@ -29,7 +54,14 @@ export const LibraryCard: React.FC<LibraryProps> = (props) => {
       }}
     >
       <ThemedView className="flex flex-row items-center space-x-3 w-[90%] bg-transparent">
-        <LinearGradient colors={color} style={styles.gradient} />
+        {playlistItem ? (
+          <FastImageComponent
+            source={playlistItem?.coverImage || ""}
+            style={styles.gradient}
+          />
+        ) : (
+          <LinearGradient colors={color} style={styles.gradient} />
+        )}
         <ThemedText className="text-gray-400 w-[88%]">{props.name}</ThemedText>
       </ThemedView>
 
