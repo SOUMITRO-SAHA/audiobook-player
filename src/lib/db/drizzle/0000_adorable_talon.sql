@@ -67,6 +67,15 @@ CREATE TABLE `track` (
 	`updated_at` text DEFAULT CURRENT_TIMESTAMP
 );
 --> statement-breakpoint
+CREATE TABLE `trackSection` (
+	`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL,
+	`timestamp` text,
+	`title` text,
+	`track_url` text NOT NULL,
+	`created_at` text DEFAULT CURRENT_TIMESTAMP,
+	`updated_at` text DEFAULT CURRENT_TIMESTAMP
+);
+--> statement-breakpoint
 CREATE TABLE `wishlist` (
 	`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL,
 	`book_id` text NOT NULL,
@@ -85,4 +94,5 @@ CREATE UNIQUE INDEX `playlist_track_playlist_id_unique` ON `playlist_track` (`pl
 CREATE UNIQUE INDEX `playlist_track_track_id_unique` ON `playlist_track` (`track_id`);--> statement-breakpoint
 CREATE UNIQUE INDEX `timestamp_track_url_unique` ON `timestamp` (`track_url`);--> statement-breakpoint
 CREATE UNIQUE INDEX `track_uri_unique` ON `track` (`uri`);--> statement-breakpoint
+CREATE UNIQUE INDEX `trackSection_track_url_unique` ON `trackSection` (`track_url`);--> statement-breakpoint
 CREATE UNIQUE INDEX `wishlist_book_id_unique` ON `wishlist` (`book_id`);
