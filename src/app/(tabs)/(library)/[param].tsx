@@ -181,12 +181,6 @@ const LibraryContentScreen = () => {
                 // Update the cover Image
                 setCoverImage(currentBookInfo.coverImage);
 
-                console.log(
-                  "Current BookInfo: ",
-                  currentlySelectedBooksInfo,
-                  currentBookInfo
-                );
-
                 // Update in the Database
                 await db.update(playlist).set({
                   coverImage: currentBookInfo.coverImage,
